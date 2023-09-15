@@ -1,0 +1,2 @@
+add_subdirectory(crypt)
+add_subdirectory(libcrypt)

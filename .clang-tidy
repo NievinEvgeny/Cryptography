@@ -23,7 +23,9 @@ Checks: |
   -readability-const-return-type,
   -cppcoreguidelines-pro-type-const-cast,
   -bugprone-easily-swappable-parameters,
-  -readability-suspicious-call-argument
+  -readability-suspicious-call-argument,
+  -readability-implicit-bool-conversion,
+  -hicpp-signed-bitwise
 WarningsAsErrors: true
 HeaderFilterRegex: 'crypt/'
 AnalyzeTemporaryDtors: false
