@@ -1,7 +1,10 @@
 #include <libcrypt/utils.hpp>
 #include <cstdint>
 #include <vector>
-#include <iostream>
+#include <cmath>
+#include <random>
+
+namespace crypt {
 
 int64_t pow_mod(int64_t base, int64_t exp, int64_t mod)
 {
@@ -41,3 +44,56 @@ std::vector<int64_t> extended_gcd(int64_t first, int64_t second)
 
     return u;
 }
+
+static bool is_prime(int64_t prime)
+{
+    if (prime <= 1)
+    {
+        return false;
+    }
+
+    auto b = static_cast<int64_t>(std::sqrt(prime));
+
+    for (int64_t i = 2; i <= b; ++i)
+    {
+        if ((prime % i) == 0)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+int64_t diffie_hellman(int64_t private_keyA, int64_t private_keyB)
+{
+    int64_t prime = 0;
+    int64_t base = 0;
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_int_distribution<int64_t> prime_range(INT16_MAX, INT32_MAX);
+
+    do
+    {
+        prime = prime_range(mt);
+    } while (!is_prime(prime) || !is_prime(2 * prime + 1));
+
+    int64_t mod = 2 * prime + 1;
+
+    std::uniform_int_distribution<int64_t> base_range(2, prime);
+
+    do
+    {
+        base = base_range(mt);
+    } while (pow_mod(base, prime, mod) == 1);
+
+    int64_t open_keyA = pow_mod(base, private_keyA, mod);
+    int64_t open_keyB = pow_mod(base, private_keyB, mod);
+
+    int64_t shared_keyA = pow_mod(open_keyB, private_keyA, mod);
+    int64_t shared_keyB = pow_mod(open_keyA, private_keyB, mod);
+
+    return shared_keyA;
+}
+
+}  // namespace crypt
