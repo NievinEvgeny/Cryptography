@@ -104,4 +104,35 @@ int64_t diffie_hellman(int64_t private_keyA, int64_t private_keyB)
     return shared_keyA;
 }
 
+int64_t baby_step_giant_step(int64_t base, int64_t result, int64_t mod)
+{
+    int64_t giant_step = std::ceil(std::sqrt(mod));
+    int64_t base_pow_gstep = 1;
+
+    for (int64_t i = 0; i < giant_step; i++)
+    {
+        base_pow_gstep = (base_pow_gstep * base) % mod;
+    }
+
+    std::unordered_map<int64_t, int64_t> giant_step_table;
+
+    for (int64_t i = 1, cur = base_pow_gstep; i <= giant_step; i++)
+    {
+        giant_step_table[cur] = i;
+        cur = (cur * base_pow_gstep) % mod;
+    }
+
+    for (int64_t j = 0, cur = result; j <= giant_step; j++)
+    {
+        if (giant_step_table.contains(cur))
+        {
+            return giant_step_table.at(cur) * giant_step - j;
+        }
+
+        cur = (cur * base) % mod;
+    }
+
+    return -1;
+}
+
 }  // namespace crypt

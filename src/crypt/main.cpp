@@ -29,4 +29,12 @@ int main()
     int64_t shared_key = crypt::diffie_hellman(private_keyA, private_keyB);
 
     std::cout << "key: " << shared_key << '\n';
+
+    const int64_t base2 = -37612783631;
+    const int64_t answer = -57623;
+    const int64_t mod2 = 64581;
+
+    int64_t exp_x = crypt::baby_step_giant_step(base2, answer, mod2);
+
+    std::cout << exp_x << '\n';
 }
