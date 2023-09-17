@@ -3,6 +3,7 @@
 #include <vector>
 #include <cmath>
 #include <random>
+#include <unordered_map>
 
 namespace crypt {
 
@@ -65,7 +66,7 @@ static bool is_prime(int64_t prime)
     return true;
 }
 
-int64_t diffie_hellman(int64_t private_keyA, int64_t private_keyB)
+static crypt::dh_system_params gen_dh_system()
 {
     int64_t prime = 0;
     int64_t base = 0;
@@ -87,11 +88,18 @@ int64_t diffie_hellman(int64_t private_keyA, int64_t private_keyB)
         base = base_range(mt);
     } while (pow_mod(base, prime, mod) == 1);
 
-    int64_t open_keyA = pow_mod(base, private_keyA, mod);
-    int64_t open_keyB = pow_mod(base, private_keyB, mod);
+    return crypt::dh_system_params{base, mod};
+}
 
-    int64_t shared_keyA = pow_mod(open_keyB, private_keyA, mod);
-    int64_t shared_keyB = pow_mod(open_keyA, private_keyB, mod);
+int64_t diffie_hellman(int64_t private_keyA, int64_t private_keyB)
+{
+    crypt::dh_system_params dh_sys_params = gen_dh_system();
+
+    // int64_t open_keyA = pow_mod(dh_sys_params.base, private_keyA, dh_sys_params.mod);
+    int64_t open_keyB = pow_mod(dh_sys_params.base, private_keyB, dh_sys_params.mod);
+
+    int64_t shared_keyA = pow_mod(open_keyB, private_keyA, dh_sys_params.mod);
+    // int64_t shared_keyB = pow_mod(open_keyA, private_keyB, dh_sys_params.mod);
 
     return shared_keyA;
 }

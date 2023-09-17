@@ -25,6 +25,7 @@ int main()
 
     const int64_t private_keyA = 1781234;
     const int64_t private_keyB = 89102734;
+
     int64_t shared_key = crypt::diffie_hellman(private_keyA, private_keyB);
 
     std::cout << "key: " << shared_key << '\n';
