@@ -27,7 +27,7 @@ Checks: |
   -readability-implicit-bool-conversion,
   -hicpp-signed-bitwise
 WarningsAsErrors: true
-HeaderFilterRegex: 'crypt/'
+HeaderFilterRegex: 'libcrypt/'
 AnalyzeTemporaryDtors: false
 FormatStyle:     file
 CheckOptions:

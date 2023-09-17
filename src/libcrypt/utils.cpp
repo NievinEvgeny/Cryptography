@@ -5,7 +5,7 @@
 #include <random>
 #include <unordered_map>
 
-namespace crypt {
+namespace libcrypt {
 
 int64_t pow_mod(int64_t base, int64_t exp, int64_t mod)
 {
@@ -66,7 +66,7 @@ static bool is_prime(int64_t prime)
     return true;
 }
 
-static crypt::dh_system_params gen_dh_system()
+static libcrypt::dh_system_params gen_dh_system()
 {
     int64_t prime = 0;
     int64_t base = 0;
@@ -88,12 +88,12 @@ static crypt::dh_system_params gen_dh_system()
         base = base_range(mt);
     } while (pow_mod(base, prime, mod) == 1);
 
-    return crypt::dh_system_params{base, mod};
+    return libcrypt::dh_system_params{base, mod};
 }
 
 int64_t diffie_hellman(int64_t private_keyA, int64_t private_keyB)
 {
-    crypt::dh_system_params dh_sys_params = gen_dh_system();
+    libcrypt::dh_system_params dh_sys_params = gen_dh_system();
 
     // int64_t open_keyA = pow_mod(dh_sys_params.base, private_keyA, dh_sys_params.mod);
     int64_t open_keyB = pow_mod(dh_sys_params.base, private_keyB, dh_sys_params.mod);
@@ -135,4 +135,4 @@ int64_t baby_step_giant_step(int64_t base, int64_t result, int64_t mod)
     return -1;
 }
 
-}  // namespace crypt
+}  // namespace libcrypt

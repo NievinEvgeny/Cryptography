@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace crypt {
+namespace libcrypt {
 
 struct dh_system_params
 {
@@ -18,4 +18,4 @@ int64_t diffie_hellman(int64_t private_keyA, int64_t private_keyB);
 
 int64_t baby_step_giant_step(int64_t base, int64_t result, int64_t mod);
 
-}  // namespace crypt
+}  // namespace libcrypt
