@@ -46,7 +46,7 @@ std::vector<int64_t> extended_gcd(int64_t first, int64_t second)
     return u;
 }
 
-static bool is_prime(int64_t prime)
+bool is_prime(int64_t prime)
 {
     if (prime <= 1)
     {
