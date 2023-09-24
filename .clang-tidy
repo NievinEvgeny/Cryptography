@@ -25,7 +25,8 @@ Checks: |
   -bugprone-easily-swappable-parameters,
   -readability-suspicious-call-argument,
   -readability-implicit-bool-conversion,
-  -hicpp-signed-bitwise
+  -hicpp-signed-bitwise,
+  -cppcoreguidelines-pro-type-reinterpret-cast
 WarningsAsErrors: true
 HeaderFilterRegex: 'libcrypt/'
 AnalyzeTemporaryDtors: false

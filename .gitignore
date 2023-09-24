@@ -1,3 +1,5 @@
 build
 *.o
 */.keep
+decryption.txt
+encryption.txt

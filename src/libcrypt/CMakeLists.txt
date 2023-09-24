@@ -3,6 +3,8 @@ set(target_name libcrypt)
 add_library(${target_name} STATIC
     utils.cpp
     ${PROJECT_SOURCE_DIR}/include/libcrypt/utils.hpp
+    ciphers.cpp
+    ${PROJECT_SOURCE_DIR}/include/libcrypt/ciphers.hpp
 )
 
 include(CompileOptions)
