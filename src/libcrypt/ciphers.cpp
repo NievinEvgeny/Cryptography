@@ -33,59 +33,44 @@ static libcrypt::shamir_user_params shamir_gen_user_params(int64_t mod)
     return {relative_prime, inversion};
 }
 
-void shamir_encrypt(std::ifstream& message_file, int64_t relative_prime, int64_t mod)
+void shamir_encrypt(
+    int64_t mod,
+    int64_t recv_rel_prime,
+    int64_t send_rel_prime,
+    std::ifstream& message_file,
+    std::fstream& encrypt_file)
 {
     char message_part = 0;
 
-    std::ofstream encryption_file("encryption.txt", std::ios::binary);
-
-    if (!encryption_file.is_open())
-    {
-        throw std::runtime_error{"Can't open file in shamir encryption"};
-    }
-
     while (message_file.read(reinterpret_cast<char*>(&message_part), sizeof(message_part)))
     {
-        int64_t temp = libcrypt::pow_mod(static_cast<int64_t>(message_part), relative_prime, mod);
-        encryption_file.write(reinterpret_cast<const char*>(&temp), sizeof(int64_t));
+        int64_t encrypted_part = libcrypt::pow_mod(
+            libcrypt::pow_mod(static_cast<int64_t>(message_part), send_rel_prime, mod), recv_rel_prime, mod);
+        encrypt_file.write(reinterpret_cast<const char*>(&encrypted_part), sizeof(int64_t));
     }
 }
 
-void shamir_decrypt(libcrypt::shamir_user_params user1, libcrypt::shamir_user_params user2, int64_t mod)
+void shamir_decrypt(
+    int64_t mod,
+    int64_t recv_inversion,
+    int64_t send_inversion,
+    std::fstream& encrypt_file,
+    std::ofstream& decrypt_file)
 {
-    std::ifstream encrypted_file("encryption.txt", std::ios::binary);
-
-    if (!encrypted_file.is_open())
-    {
-        throw std::runtime_error{"Can't open file in shamir decryption"};
-    }
-
-    std::ofstream decryption_file("decryption.txt", std::ios::binary);
-
-    if (!decryption_file.is_open())
-    {
-        throw std::runtime_error{"Can't open file in shamir decryption"};
-    }
-
     int64_t message_part = 0;
 
-    while (encrypted_file.read(reinterpret_cast<char*>(&message_part), sizeof(message_part)))
+    while (encrypt_file.read(reinterpret_cast<char*>(&message_part), sizeof(message_part)))
     {
-        int64_t step2 = libcrypt::pow_mod(message_part, user2.relative_prime, mod);
-        int64_t step3 = libcrypt::pow_mod(step2, user1.inversion, mod);
-        decryption_file << static_cast<char>(libcrypt::pow_mod(step3, user2.inversion, mod));
+        decrypt_file << static_cast<char>(
+            libcrypt::pow_mod(libcrypt::pow_mod(message_part, send_inversion, mod), recv_inversion, mod));
     }
 }
 
-void shamir(const std::string& message_filename)
+void shamir(
+    const std::string& message_filename,
+    const std::string& encrypt_filename,
+    const std::string& decrypt_filename)
 {
-    std::ifstream message_file(message_filename, std::ios::binary);
-
-    if (!message_file.is_open())
-    {
-        throw std::runtime_error{'"' + message_filename + '"' + " not found"};
-    }
-
     int64_t mod = 0;
     std::random_device rd;
     std::mt19937 mt(rd());
@@ -96,11 +81,36 @@ void shamir(const std::string& message_filename)
         mod = mod_range(mt);
     } while (!libcrypt::is_prime(mod));
 
-    libcrypt::shamir_user_params user1 = shamir_gen_user_params(mod);
-    libcrypt::shamir_user_params user2 = shamir_gen_user_params(mod);
+    const libcrypt::shamir_user_params sender_params = shamir_gen_user_params(mod);
+    const libcrypt::shamir_user_params reciever_params = shamir_gen_user_params(mod);
 
-    shamir_encrypt(message_file, user1.relative_prime, mod);
-    shamir_decrypt(user1, user2, mod);
+    std::ifstream message_file(message_filename, std::ios::binary);
+    if (!message_file.is_open())
+    {
+        throw std::runtime_error{'"' + message_filename + '"' + " not found"};
+    }
+
+    std::fstream encryption_file(encrypt_filename, std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
+    if (!encryption_file.is_open())
+    {
+        throw std::runtime_error{'"' + encrypt_filename + '"' + " not found"};
+    }
+
+    shamir_encrypt(mod, reciever_params.relative_prime, sender_params.relative_prime, message_file, encryption_file);
+
+    message_file.close();
+    encryption_file.seekp(0, std::ios::beg);
+
+    std::ofstream decryption_file(decrypt_filename, std::ios::binary);
+    if (!decryption_file.is_open())
+    {
+        throw std::runtime_error{'"' + decrypt_filename + '"' + " not found"};
+    }
+
+    shamir_decrypt(mod, reciever_params.inversion, sender_params.inversion, encryption_file, decryption_file);
+
+    encryption_file.close();
+    decryption_file.close();
 }
 
 }  // namespace libcrypt

@@ -2,12 +2,16 @@
 #include <libcrypt/ciphers.hpp>
 #include <iostream>
 #include <exception>
+#include <string>
 
 int main()
 {
     try
     {
-        libcrypt::shamir("message.txt");
+        const std::string message_filename{"message.txt"};
+        const std::string encryption_filename{"encryption.txt"};
+        const std::string decryption_filename{"decryption.txt"};
+        libcrypt::shamir(message_filename, encryption_filename, decryption_filename);
     }
     catch (const std::exception& msg)
     {

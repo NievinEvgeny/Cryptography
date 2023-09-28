@@ -11,10 +11,23 @@ struct shamir_user_params
     int64_t inversion;
 };
 
-void shamir_encrypt(std::ifstream& message_file, int64_t secret_relative_prime, int64_t mod);
+void shamir_encrypt(
+    int64_t mod,
+    int64_t recv_rel_prime,
+    int64_t send_rel_prime,
+    std::ifstream& message_file,
+    std::fstream& encrypt_file);
 
-void shamir_decrypt(libcrypt::shamir_user_params user1, libcrypt::shamir_user_params user2, int64_t mod);
+void shamir_decrypt(
+    int64_t mod,
+    int64_t recv_inversion,
+    int64_t send_inversion,
+    std::fstream& encrypt_file,
+    std::ofstream& decrypt_file);
 
-void shamir(const std::string& message_filename);
+void shamir(
+    const std::string& message_filename,
+    const std::string& encrypt_filename,
+    const std::string& decrypt_filename);
 
 }  // namespace libcrypt
