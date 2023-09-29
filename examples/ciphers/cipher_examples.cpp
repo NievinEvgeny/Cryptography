@@ -80,4 +80,55 @@ void shamir_example(const cxxopts::ParseResult& parse_cmd_line)
     decryption_file.close();
 }
 
+void elgamal_example(const cxxopts::ParseResult& parse_cmd_line)
+{
+    const std::string message_filename = parse_cmd_line["message"].as<std::string>();
+    const std::string encrypt_filename = parse_cmd_line["encrypt"].as<std::string>();
+    const std::string decrypt_filename = parse_cmd_line["decrypt"].as<std::string>();
+
+    libcrypt::dh_system_params sys_params = libcrypt::gen_dh_system();
+
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_int_distribution<int64_t> private_key_range(2, sys_params.mod - 2);
+    std::uniform_int_distribution<int64_t> session_key_range(1, sys_params.mod - 2);
+
+    int64_t recv_private_key = private_key_range(mt);
+    int64_t recv_shared_key = libcrypt::pow_mod(sys_params.base, recv_private_key, sys_params.mod);
+    int64_t session_key = 0;
+
+    do
+    {
+        session_key = session_key_range(mt);
+    } while (libcrypt::extended_gcd(sys_params.mod - 1, session_key).front() != 1);
+
+    std::ifstream message_file(message_filename, std::ios::binary);
+    if (!message_file.is_open())
+    {
+        throw std::runtime_error{'"' + message_filename + '"' + " not found"};
+    }
+
+    std::fstream encryption_file(encrypt_filename, std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
+    if (!encryption_file.is_open())
+    {
+        throw std::runtime_error{'"' + encrypt_filename + '"' + " not found"};
+    }
+
+    libcrypt::elgamal_encrypt(sys_params, session_key, recv_shared_key, message_file, encryption_file);
+
+    message_file.close();
+    encryption_file.seekp(0, std::ios::beg);
+
+    std::ofstream decryption_file(decrypt_filename, std::ios::binary);
+    if (!decryption_file.is_open())
+    {
+        throw std::runtime_error{'"' + decrypt_filename + '"' + " not found"};
+    }
+
+    libcrypt::elgamal_decrypt(sys_params.mod, recv_private_key, encryption_file, decryption_file);
+
+    encryption_file.close();
+    decryption_file.close();
+}
+
 }  // namespace libcrypt

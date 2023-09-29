@@ -12,4 +12,6 @@ struct shamir_user_params
 
 void shamir_example(const cxxopts::ParseResult& parse_cmd_line);
 
+void elgamal_example(const cxxopts::ParseResult& parse_cmd_line);
+
 }  // namespace libcrypt

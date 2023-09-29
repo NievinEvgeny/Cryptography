@@ -14,6 +14,7 @@ int main(int argc, char** argv)
     options.add_options()
         ("c,cipher", "cipher call")
         ("shamir", "shamir cipher call")
+        ("elgamal", "elgamal cipher call")
         ("m,message", "message filename", cxxopts::value<std::string>()->default_value("examples/ciphers/message.txt"))
         ("e,encrypt", "encryption filename", cxxopts::value<std::string>()->default_value("examples/ciphers/encryption.txt"))
         ("d,decrypt", "decryption filename", cxxopts::value<std::string>()->default_value("examples/ciphers/decryption.txt"))
@@ -35,6 +36,10 @@ int main(int argc, char** argv)
             if (parse_cmd_line.count("shamir"))
             {
                 libcrypt::shamir_example(parse_cmd_line);
+            }
+            if (parse_cmd_line.count("elgamal"))
+            {
+                libcrypt::elgamal_example(parse_cmd_line);
             }
         }
     }
