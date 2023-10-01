@@ -3,3 +3,4 @@ build
 */.keep
 decryption.txt
 encryption.txt
+vernam_key.txt

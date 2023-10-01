@@ -15,9 +15,11 @@ int main(int argc, char** argv)
         ("c,cipher", "cipher call")
         ("shamir", "shamir cipher call")
         ("elgamal", "elgamal cipher call")
+        ("vernam", "vernam cipher call")
         ("m,message", "message filename", cxxopts::value<std::string>()->default_value("examples/ciphers/message.txt"))
         ("e,encrypt", "encryption filename", cxxopts::value<std::string>()->default_value("examples/ciphers/encryption.txt"))
         ("d,decrypt", "decryption filename", cxxopts::value<std::string>()->default_value("examples/ciphers/decryption.txt"))
+        ("v,vernam_key", "vernam key filename", cxxopts::value<std::string>()->default_value("examples/ciphers/vernam_key.txt"))
         ("h,help", "Print usage");
     // clang-format on
 
@@ -40,6 +42,10 @@ int main(int argc, char** argv)
             if (parse_cmd_line.count("elgamal"))
             {
                 libcrypt::elgamal_example(parse_cmd_line);
+            }
+            if (parse_cmd_line.count("vernam"))
+            {
+                libcrypt::vernam_example(parse_cmd_line);
             }
         }
     }

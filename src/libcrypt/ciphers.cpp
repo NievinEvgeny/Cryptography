@@ -2,6 +2,7 @@
 #include <libcrypt/ciphers.hpp>
 #include <fstream>
 #include <cstdint>
+#include <exception>
 
 namespace libcrypt {
 
@@ -74,6 +75,43 @@ void elgamal_decrypt(int64_t mod, int64_t recv_private_key, std::fstream& encryp
         decrypt_file << static_cast<char>(
             ((ciphertext_second % mod) * (libcrypt::pow_mod(ciphertext_first, mod - 1 - recv_private_key, mod) % mod))
             % mod);
+    }
+}
+
+void vernam_encrypt(std::fstream& vernam_key_file, std::ifstream& message_file, std::fstream& encrypt_file)
+{
+    char message_part = 0;
+    char vernam_key_part = 0;
+
+    while (message_file.read(reinterpret_cast<char*>(&message_part), sizeof(message_part)))
+    {
+        if (vernam_key_file.read(reinterpret_cast<char*>(&vernam_key_part), sizeof(vernam_key_part)))
+        {
+            char encrypted_message = static_cast<char>(message_part ^ vernam_key_part);
+            encrypt_file.write(reinterpret_cast<const char*>(&encrypted_message), sizeof(char));
+        }
+        else
+        {
+            throw std::runtime_error{"Size of vernam key isn't enough to cover the entire message"};
+        }
+    }
+}
+
+void vernam_decrypt(std::fstream& vernam_key_file, std::fstream& encrypt_file, std::ofstream& decrypt_file)
+{
+    char message_part = 0;
+    char vernam_key_part = 0;
+
+    while (encrypt_file.read(reinterpret_cast<char*>(&message_part), sizeof(message_part)))
+    {
+        if (vernam_key_file.read(reinterpret_cast<char*>(&vernam_key_part), sizeof(vernam_key_part)))
+        {
+            decrypt_file << static_cast<char>(message_part ^ vernam_key_part);
+        }
+        else
+        {
+            throw std::runtime_error{"Size of vernam key isn't enough to cover the entire message"};
+        }
     }
 }
 

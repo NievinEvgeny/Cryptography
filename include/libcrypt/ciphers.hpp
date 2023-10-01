@@ -29,4 +29,8 @@ void elgamal_encrypt(
 
 void elgamal_decrypt(int64_t mod, int64_t recv_private_key, std::fstream& encrypt_file, std::ofstream& decrypt_file);
 
+void vernam_encrypt(std::fstream& vernam_key_file, std::ifstream& message_file, std::fstream& encrypt_file);
+
+void vernam_decrypt(std::fstream& vernam_key_file, std::fstream& encrypt_file, std::ofstream& decrypt_file);
+
 }  // namespace libcrypt

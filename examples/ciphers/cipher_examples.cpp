@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <random>
 #include <vector>
+#include <filesystem>
 
 namespace libcrypt {
 
@@ -129,6 +130,63 @@ void elgamal_example(const cxxopts::ParseResult& parse_cmd_line)
 
     encryption_file.close();
     decryption_file.close();
+}
+
+void vernam_example(const cxxopts::ParseResult& parse_cmd_line)
+{
+    const std::filesystem::path message_path = parse_cmd_line["message"].as<std::string>();
+    const std::string encrypt_filename = parse_cmd_line["encrypt"].as<std::string>();
+    const std::string decrypt_filename = parse_cmd_line["decrypt"].as<std::string>();
+    const std::string vernam_key_filename = parse_cmd_line["vernam_key"].as<std::string>();
+
+    std::ifstream message_file(message_path, std::ios::binary);
+    if (!message_file.is_open())
+    {
+        throw std::runtime_error{'"' + message_path.string() + '"' + " not found"};
+    }
+
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_int_distribution<int16_t> randomizer(CHAR_MIN, CHAR_MAX);
+
+    std::fstream vernam_key_file(
+        vernam_key_filename, std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
+    if (!vernam_key_file.is_open())
+    {
+        throw std::runtime_error{'"' + vernam_key_filename + '"' + " not found"};
+    }
+
+    for (uintmax_t i = 0; i < std::filesystem::file_size(message_path); i++)
+    {
+        char rand = static_cast<char>(randomizer(mt));
+        vernam_key_file.write(reinterpret_cast<const char*>(&rand), sizeof(char));
+    }
+
+    vernam_key_file.seekp(0, std::ios::beg);
+
+    std::fstream encryption_file(encrypt_filename, std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
+    if (!encryption_file.is_open())
+    {
+        throw std::runtime_error{'"' + encrypt_filename + '"' + " not found"};
+    }
+
+    libcrypt::vernam_encrypt(vernam_key_file, message_file, encryption_file);
+
+    message_file.close();
+    encryption_file.seekp(0, std::ios::beg);
+    vernam_key_file.seekp(0, std::ios::beg);
+
+    std::ofstream decryption_file(decrypt_filename, std::ios::binary);
+    if (!decryption_file.is_open())
+    {
+        throw std::runtime_error{'"' + decrypt_filename + '"' + " not found"};
+    }
+
+    libcrypt::vernam_decrypt(vernam_key_file, encryption_file, decryption_file);
+
+    encryption_file.close();
+    decryption_file.close();
+    vernam_key_file.close();
 }
 
 }  // namespace libcrypt
