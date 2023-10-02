@@ -46,7 +46,7 @@ std::vector<int64_t> extended_gcd(int64_t first, int64_t second)
     return u;
 }
 
-static bool is_prime(int64_t prime)
+bool is_prime(int64_t prime)
 {
     if (prime <= 1)
     {
@@ -66,13 +66,13 @@ static bool is_prime(int64_t prime)
     return true;
 }
 
-static libcrypt::dh_system_params gen_dh_system()
+libcrypt::dh_system_params gen_dh_system()
 {
     int64_t prime = 0;
     int64_t base = 0;
     std::random_device rd;
     std::mt19937 mt(rd());
-    std::uniform_int_distribution<int64_t> prime_range(INT16_MAX, INT32_MAX);
+    std::uniform_int_distribution<int64_t> prime_range(INT16_MAX, INT32_MAX / 2 - 1);
 
     do
     {
@@ -81,7 +81,7 @@ static libcrypt::dh_system_params gen_dh_system()
 
     int64_t mod = 2 * prime + 1;
 
-    std::uniform_int_distribution<int64_t> base_range(2, prime);
+    std::uniform_int_distribution<int64_t> base_range(2, prime - 2);
 
     do
     {

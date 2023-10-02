@@ -1,40 +1,67 @@
+#include <ciphers/cipher_examples.hpp>
 #include <libcrypt/utils.hpp>
+#include <libcrypt/ciphers.hpp>
+#include <cxxopts.hpp>
 #include <iostream>
-#include <cstdint>
+#include <exception>
+#include <string>
 
-int main()
+int main(int argc, char** argv)
 {
-    constexpr int64_t base = -37612783631;
-    constexpr int64_t exp = 645813790211;
-    constexpr int64_t mod = 64581;
+    cxxopts::Options options("cryptography");
 
-    int64_t result = libcrypt::pow_mod(base, exp, mod);
+    // clang-format off
+    options.add_options()
+        ("c,cipher", "cipher call")
+        ("shamir", "shamir cipher call")
+        ("elgamal", "elgamal cipher call")
+        ("vernam", "vernam cipher call")
+        ("rsa", "rsa cipher call")
+        ("m,message", "message filename", cxxopts::value<std::string>()->default_value("examples/ciphers/message.txt"))
+        ("e,encrypt", "encryption filename", cxxopts::value<std::string>()->default_value("examples/ciphers/encryption.txt"))
+        ("d,decrypt", "decryption filename", cxxopts::value<std::string>()->default_value("examples/ciphers/decryption.txt"))
+        ("v,vernam_key", "vernam key filename", cxxopts::value<std::string>()->default_value("examples/ciphers/vernam_key.txt"))
+        ("h,help", "Print usage");
+    // clang-format on
 
-    std::cout << result << '\n';
-
-    constexpr int64_t first = 3124312425;
-    constexpr int64_t second = 1524345121234;
-
-    std::vector<int64_t> res = libcrypt::extended_gcd(first, second);
-
-    for (const auto& elem : res)
+    try
     {
-        std::cout << elem << ' ';
+        const auto parse_cmd_line = options.parse(argc, argv);
+
+        if (parse_cmd_line.count("help"))
+        {
+            std::cout << options.help() << '\n';
+            return 0;
+        }
+
+        if (parse_cmd_line.count("cipher"))
+        {
+            if (parse_cmd_line.count("shamir"))
+            {
+                libcrypt::shamir_example(parse_cmd_line);
+            }
+            if (parse_cmd_line.count("elgamal"))
+            {
+                libcrypt::elgamal_example(parse_cmd_line);
+            }
+            if (parse_cmd_line.count("vernam"))
+            {
+                libcrypt::vernam_example(parse_cmd_line);
+            }
+            if (parse_cmd_line.count("rsa"))
+            {
+                libcrypt::rsa_example(parse_cmd_line);
+            }
+        }
     }
-    std::cout << '\n';
-
-    constexpr int64_t private_keyA = 1781234;
-    constexpr int64_t private_keyB = 89102734;
-
-    int64_t shared_key = libcrypt::diffie_hellman(private_keyA, private_keyB);
-
-    std::cout << "key: " << shared_key << '\n';
-
-    constexpr int64_t base2 = -37612783631;
-    constexpr int64_t answer = -57623;
-    constexpr int64_t mod2 = 64581;
-
-    int64_t exp_x = libcrypt::baby_step_giant_step(base2, answer, mod2);
-
-    std::cout << exp_x << '\n';
+    catch (const cxxopts::exceptions::exception& msg)
+    {
+        std::cerr << msg.what() << '\n';
+        return -1;
+    }
+    catch (const std::exception& msg)
+    {
+        std::cerr << msg.what() << '\n';
+        return -1;
+    }
 }

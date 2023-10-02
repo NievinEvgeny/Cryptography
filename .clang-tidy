@@ -25,9 +25,11 @@ Checks: |
   -bugprone-easily-swappable-parameters,
   -readability-suspicious-call-argument,
   -readability-implicit-bool-conversion,
-  -hicpp-signed-bitwise
+  -hicpp-signed-bitwise,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -bugprone-exception-escape
 WarningsAsErrors: true
-HeaderFilterRegex: 'libcrypt/'
+HeaderFilterRegex: 'libcrypt/|ciphers/'
 AnalyzeTemporaryDtors: false
 FormatStyle:     file
 CheckOptions:

@@ -1,25 +1,22 @@
-set(target_name cryptography)
+set(target_name examples)
 
-add_executable(${target_name})
+add_library(${target_name} STATIC
+    ciphers/cipher_examples.cpp
+    ciphers/cipher_examples.hpp
+)
 
 include(CompileOptions)
 set_compile_options(${target_name})
 
-target_sources(
-    ${target_name}
-    PRIVATE
-    main.cpp
-)
-
 target_link_libraries(
     ${target_name}
     PRIVATE
-    examples
+    libcrypt
     cxxopts
 )
 
 target_include_directories(
     ${target_name}
     PUBLIC
-    ${PROJECT_SOURCE_DIR}/examples/
+    ${PROJECT_SOURCE_DIR}/include/
 )
