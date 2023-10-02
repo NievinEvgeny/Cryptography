@@ -189,4 +189,74 @@ void vernam_example(const cxxopts::ParseResult& parse_cmd_line)
     vernam_key_file.close();
 }
 
+void rsa_example(const cxxopts::ParseResult& parse_cmd_line)
+{
+    const std::string message_filename = parse_cmd_line["message"].as<std::string>();
+    const std::string encrypt_filename = parse_cmd_line["encrypt"].as<std::string>();
+    const std::string decrypt_filename = parse_cmd_line["decrypt"].as<std::string>();
+
+    constexpr int64_t recv_shared_key = 3;
+    std::vector<int64_t> gcd_result;
+
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_int_distribution<int64_t> prime_gen_range(UINT8_MAX, INT16_MAX);
+
+    int64_t mod_part_P = 0;
+    int64_t mod_part_Q = 0;
+    int64_t euler_func_res = 0;
+
+    do
+    {
+        do
+        {
+            mod_part_P = prime_gen_range(mt);
+        } while (!libcrypt::is_prime(mod_part_P));
+
+        do
+        {
+            mod_part_Q = prime_gen_range(mt);
+        } while (!libcrypt::is_prime(mod_part_Q));
+
+        euler_func_res = (mod_part_P - 1) * (mod_part_Q - 1);
+        gcd_result = libcrypt::extended_gcd(recv_shared_key, euler_func_res);
+    } while (gcd_result.front() != 1);
+
+    int64_t mod = mod_part_P * mod_part_Q;
+    int64_t recv_private_key = gcd_result.back();
+
+    if (recv_private_key < 0)
+    {
+        recv_private_key += euler_func_res;
+    }
+
+    std::ifstream message_file(message_filename, std::ios::binary);
+    if (!message_file.is_open())
+    {
+        throw std::runtime_error{'"' + message_filename + '"' + " not found"};
+    }
+
+    std::fstream encryption_file(encrypt_filename, std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
+    if (!encryption_file.is_open())
+    {
+        throw std::runtime_error{'"' + encrypt_filename + '"' + " not found"};
+    }
+
+    libcrypt::rsa_encrypt(mod, recv_shared_key, message_file, encryption_file);
+
+    message_file.close();
+    encryption_file.seekp(0, std::ios::beg);
+
+    std::ofstream decryption_file(decrypt_filename, std::ios::binary);
+    if (!decryption_file.is_open())
+    {
+        throw std::runtime_error{'"' + decrypt_filename + '"' + " not found"};
+    }
+
+    libcrypt::rsa_decrypt(mod, recv_private_key, encryption_file, decryption_file);
+
+    encryption_file.close();
+    decryption_file.close();
+}
+
 }  // namespace libcrypt

@@ -115,4 +115,25 @@ void vernam_decrypt(std::fstream& vernam_key_file, std::fstream& encrypt_file, s
     }
 }
 
+void rsa_encrypt(int64_t mod, int64_t recv_shared_key, std::ifstream& message_file, std::fstream& encrypt_file)
+{
+    char message_part = 0;
+
+    while (message_file.read(reinterpret_cast<char*>(&message_part), sizeof(message_part)))
+    {
+        int64_t encrypted_part = libcrypt::pow_mod(static_cast<int64_t>(message_part), recv_shared_key, mod);
+        encrypt_file.write(reinterpret_cast<const char*>(&encrypted_part), sizeof(int64_t));
+    }
+}
+
+void rsa_decrypt(int64_t mod, int64_t recv_private_key, std::fstream& encrypt_file, std::ofstream& decrypt_file)
+{
+    int64_t message_part = 0;
+
+    while (encrypt_file.read(reinterpret_cast<char*>(&message_part), sizeof(message_part)))
+    {
+        decrypt_file << static_cast<char>(libcrypt::pow_mod(message_part, recv_private_key, mod));
+    }
+}
+
 }  // namespace libcrypt

@@ -16,6 +16,7 @@ int main(int argc, char** argv)
         ("shamir", "shamir cipher call")
         ("elgamal", "elgamal cipher call")
         ("vernam", "vernam cipher call")
+        ("rsa", "rsa cipher call")
         ("m,message", "message filename", cxxopts::value<std::string>()->default_value("examples/ciphers/message.txt"))
         ("e,encrypt", "encryption filename", cxxopts::value<std::string>()->default_value("examples/ciphers/encryption.txt"))
         ("d,decrypt", "decryption filename", cxxopts::value<std::string>()->default_value("examples/ciphers/decryption.txt"))
@@ -46,6 +47,10 @@ int main(int argc, char** argv)
             if (parse_cmd_line.count("vernam"))
             {
                 libcrypt::vernam_example(parse_cmd_line);
+            }
+            if (parse_cmd_line.count("rsa"))
+            {
+                libcrypt::rsa_example(parse_cmd_line);
             }
         }
     }

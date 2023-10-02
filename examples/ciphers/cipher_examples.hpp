@@ -16,4 +16,6 @@ void elgamal_example(const cxxopts::ParseResult& parse_cmd_line);
 
 void vernam_example(const cxxopts::ParseResult& parse_cmd_line);
 
+void rsa_example(const cxxopts::ParseResult& parse_cmd_line);
+
 }  // namespace libcrypt

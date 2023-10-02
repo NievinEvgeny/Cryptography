@@ -33,4 +33,8 @@ void vernam_encrypt(std::fstream& vernam_key_file, std::ifstream& message_file, 
 
 void vernam_decrypt(std::fstream& vernam_key_file, std::fstream& encrypt_file, std::ofstream& decrypt_file);
 
+void rsa_encrypt(int64_t mod, int64_t recv_shared_key, std::ifstream& message_file, std::fstream& encrypt_file);
+
+void rsa_decrypt(int64_t mod, int64_t recv_private_key, std::fstream& encrypt_file, std::ofstream& decrypt_file);
+
 }  // namespace libcrypt
