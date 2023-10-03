@@ -1,4 +1,4 @@
-#include <ciphers/cipher_examples.hpp>
+#include <ciphers/ciphers_example.hpp>
 #include <libcrypt/utils.hpp>
 #include <libcrypt/ciphers.hpp>
 #include <cxxopts.hpp>
@@ -36,22 +36,7 @@ int main(int argc, char** argv)
 
         if (parse_cmd_line.count("cipher"))
         {
-            if (parse_cmd_line.count("shamir"))
-            {
-                libcrypt::shamir_example(parse_cmd_line);
-            }
-            if (parse_cmd_line.count("elgamal"))
-            {
-                libcrypt::elgamal_example(parse_cmd_line);
-            }
-            if (parse_cmd_line.count("vernam"))
-            {
-                libcrypt::vernam_example(parse_cmd_line);
-            }
-            if (parse_cmd_line.count("rsa"))
-            {
-                libcrypt::rsa_example(parse_cmd_line);
-            }
+            libcrypt::cipher_call_example(parse_cmd_line);
         }
     }
     catch (const cxxopts::exceptions::exception& msg)

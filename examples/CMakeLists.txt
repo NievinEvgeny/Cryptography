@@ -1,8 +1,8 @@
 set(target_name examples)
 
 add_library(${target_name} STATIC
-    ciphers/cipher_examples.cpp
-    ciphers/cipher_examples.hpp
+    ciphers/ciphers_example.cpp
+    ciphers/ciphers_example.hpp
 )
 
 include(CompileOptions)
