@@ -15,13 +15,13 @@ static libcrypt::shamir_user_params shamir_gen_user_params(int64_t mod)
 
     std::random_device rd;
     std::mt19937 mt(rd());
-    std::uniform_int_distribution<int64_t> num_range(INT16_MAX, INT32_MAX);
+    std::uniform_int_distribution<int64_t> rel_prime_range(INT16_MAX, mod - 1);
 
     do
     {
-        relative_prime = num_range(mt);
+        relative_prime = rel_prime_range(mt);
         gcd_result = libcrypt::extended_gcd(mod - 1, relative_prime);
-    } while ((gcd_result.front() != 1) || (gcd_result.back() >= mod) || (relative_prime >= mod));
+    } while (gcd_result.front() != 1);
 
     int64_t inversion = gcd_result.back();
 
