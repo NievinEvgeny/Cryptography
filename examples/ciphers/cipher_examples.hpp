@@ -10,12 +10,6 @@ struct shamir_user_params
     int64_t inversion;
 };
 
-void shamir_example(const cxxopts::ParseResult& parse_cmd_line);
-
-void elgamal_example(const cxxopts::ParseResult& parse_cmd_line);
-
-void vernam_example(const cxxopts::ParseResult& parse_cmd_line);
-
-void rsa_example(const cxxopts::ParseResult& parse_cmd_line);
+void cipher_call_example(const cxxopts::ParseResult& parse_cmd_line);
 
 }  // namespace libcrypt

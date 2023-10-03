@@ -33,111 +33,11 @@ static libcrypt::shamir_user_params shamir_gen_user_params(int64_t mod)
     return {relative_prime, inversion};
 }
 
-void shamir_example(const cxxopts::ParseResult& parse_cmd_line)
-{
-    const std::string message_filename = parse_cmd_line["message"].as<std::string>();
-    const std::string encrypt_filename = parse_cmd_line["encrypt"].as<std::string>();
-    const std::string decrypt_filename = parse_cmd_line["decrypt"].as<std::string>();
-
-    int64_t mod = 0;
-    std::random_device rd;
-    std::mt19937 mt(rd());
-    std::uniform_int_distribution<int64_t> mod_range(INT16_MAX, INT32_MAX);
-
-    do
-    {
-        mod = mod_range(mt);
-    } while (!libcrypt::is_prime(mod));
-
-    const libcrypt::shamir_user_params sender_params = shamir_gen_user_params(mod);
-    const libcrypt::shamir_user_params reciever_params = shamir_gen_user_params(mod);
-
-    std::ifstream message_file(message_filename, std::ios::binary);
-    if (!message_file.is_open())
-    {
-        throw std::runtime_error{'"' + message_filename + '"' + " not found"};
-    }
-
-    std::fstream encryption_file(encrypt_filename, std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
-    if (!encryption_file.is_open())
-    {
-        throw std::runtime_error{'"' + encrypt_filename + '"' + " not found"};
-    }
-
-    shamir_encrypt(mod, reciever_params.relative_prime, sender_params.relative_prime, message_file, encryption_file);
-
-    message_file.close();
-    encryption_file.seekp(0, std::ios::beg);
-
-    std::ofstream decryption_file(decrypt_filename, std::ios::binary);
-    if (!decryption_file.is_open())
-    {
-        throw std::runtime_error{'"' + decrypt_filename + '"' + " not found"};
-    }
-
-    shamir_decrypt(mod, reciever_params.inversion, sender_params.inversion, encryption_file, decryption_file);
-
-    encryption_file.close();
-    decryption_file.close();
-}
-
-void elgamal_example(const cxxopts::ParseResult& parse_cmd_line)
-{
-    const std::string message_filename = parse_cmd_line["message"].as<std::string>();
-    const std::string encrypt_filename = parse_cmd_line["encrypt"].as<std::string>();
-    const std::string decrypt_filename = parse_cmd_line["decrypt"].as<std::string>();
-
-    libcrypt::dh_system_params sys_params = libcrypt::gen_dh_system();
-
-    std::random_device rd;
-    std::mt19937 mt(rd());
-    std::uniform_int_distribution<int64_t> private_key_range(2, sys_params.mod - 2);
-    std::uniform_int_distribution<int64_t> session_key_range(1, sys_params.mod - 2);
-
-    int64_t recv_private_key = private_key_range(mt);
-    int64_t recv_shared_key = libcrypt::pow_mod(sys_params.base, recv_private_key, sys_params.mod);
-    int64_t session_key = 0;
-
-    do
-    {
-        session_key = session_key_range(mt);
-    } while (libcrypt::extended_gcd(sys_params.mod - 1, session_key).front() != 1);
-
-    std::ifstream message_file(message_filename, std::ios::binary);
-    if (!message_file.is_open())
-    {
-        throw std::runtime_error{'"' + message_filename + '"' + " not found"};
-    }
-
-    std::fstream encryption_file(encrypt_filename, std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
-    if (!encryption_file.is_open())
-    {
-        throw std::runtime_error{'"' + encrypt_filename + '"' + " not found"};
-    }
-
-    libcrypt::elgamal_encrypt(sys_params, session_key, recv_shared_key, message_file, encryption_file);
-
-    message_file.close();
-    encryption_file.seekp(0, std::ios::beg);
-
-    std::ofstream decryption_file(decrypt_filename, std::ios::binary);
-    if (!decryption_file.is_open())
-    {
-        throw std::runtime_error{'"' + decrypt_filename + '"' + " not found"};
-    }
-
-    libcrypt::elgamal_decrypt(sys_params.mod, recv_private_key, encryption_file, decryption_file);
-
-    encryption_file.close();
-    decryption_file.close();
-}
-
-void vernam_example(const cxxopts::ParseResult& parse_cmd_line)
+void cipher_call_example(const cxxopts::ParseResult& parse_cmd_line)
 {
     const std::filesystem::path message_path = parse_cmd_line["message"].as<std::string>();
-    const std::string encrypt_filename = parse_cmd_line["encrypt"].as<std::string>();
-    const std::string decrypt_filename = parse_cmd_line["decrypt"].as<std::string>();
-    const std::string vernam_key_filename = parse_cmd_line["vernam_key"].as<std::string>();
+    const std::filesystem::path encrypt_path = parse_cmd_line["encrypt"].as<std::string>();
+    const std::filesystem::path decrypt_path = parse_cmd_line["decrypt"].as<std::string>();
 
     std::ifstream message_file(message_path, std::ios::binary);
     if (!message_file.is_open())
@@ -145,116 +45,139 @@ void vernam_example(const cxxopts::ParseResult& parse_cmd_line)
         throw std::runtime_error{'"' + message_path.string() + '"' + " not found"};
     }
 
-    std::random_device rd;
-    std::mt19937 mt(rd());
-    std::uniform_int_distribution<int16_t> randomizer(CHAR_MIN, CHAR_MAX);
-
-    std::fstream vernam_key_file(
-        vernam_key_filename, std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
-    if (!vernam_key_file.is_open())
-    {
-        throw std::runtime_error{'"' + vernam_key_filename + '"' + " not found"};
-    }
-
-    for (uintmax_t i = 0; i < std::filesystem::file_size(message_path); i++)
-    {
-        char rand = static_cast<char>(randomizer(mt));
-        vernam_key_file.write(reinterpret_cast<const char*>(&rand), sizeof(char));
-    }
-
-    vernam_key_file.seekp(0, std::ios::beg);
-
-    std::fstream encryption_file(encrypt_filename, std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
+    std::fstream encryption_file(encrypt_path, std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
     if (!encryption_file.is_open())
     {
-        throw std::runtime_error{'"' + encrypt_filename + '"' + " not found"};
+        throw std::runtime_error{'"' + encrypt_path.string() + '"' + " not found"};
     }
 
-    libcrypt::vernam_encrypt(vernam_key_file, message_file, encryption_file);
-
-    message_file.close();
-    encryption_file.seekp(0, std::ios::beg);
-    vernam_key_file.seekp(0, std::ios::beg);
-
-    std::ofstream decryption_file(decrypt_filename, std::ios::binary);
+    std::ofstream decryption_file(decrypt_path, std::ios::binary);
     if (!decryption_file.is_open())
     {
-        throw std::runtime_error{'"' + decrypt_filename + '"' + " not found"};
+        throw std::runtime_error{'"' + decrypt_path.string() + '"' + " not found"};
     }
 
-    libcrypt::vernam_decrypt(vernam_key_file, encryption_file, decryption_file);
-
-    encryption_file.close();
-    decryption_file.close();
-    vernam_key_file.close();
-}
-
-void rsa_example(const cxxopts::ParseResult& parse_cmd_line)
-{
-    const std::string message_filename = parse_cmd_line["message"].as<std::string>();
-    const std::string encrypt_filename = parse_cmd_line["encrypt"].as<std::string>();
-    const std::string decrypt_filename = parse_cmd_line["decrypt"].as<std::string>();
-
-    constexpr int64_t recv_shared_key = 3;
-    std::vector<int64_t> gcd_result;
-
-    std::random_device rd;
-    std::mt19937 mt(rd());
-    std::uniform_int_distribution<int64_t> prime_gen_range(UINT8_MAX, INT16_MAX);
-
-    int64_t mod_part_P = 0;
-    int64_t mod_part_Q = 0;
-    int64_t euler_func_res = 0;
-
-    do
+    if (parse_cmd_line.count("shamir"))
     {
-        do
-        {
-            mod_part_P = prime_gen_range(mt);
-        } while (!libcrypt::is_prime(mod_part_P));
+        int64_t mod = 0;
+        std::random_device rd;
+        std::mt19937 mt(rd());
+        std::uniform_int_distribution<int64_t> mod_range(INT16_MAX, INT32_MAX);
 
         do
         {
-            mod_part_Q = prime_gen_range(mt);
-        } while (!libcrypt::is_prime(mod_part_Q));
+            mod = mod_range(mt);
+        } while (!libcrypt::is_prime(mod));
 
-        euler_func_res = (mod_part_P - 1) * (mod_part_Q - 1);
-        gcd_result = libcrypt::extended_gcd(recv_shared_key, euler_func_res);
-    } while (gcd_result.front() != 1);
+        const libcrypt::shamir_user_params sender_params = shamir_gen_user_params(mod);
+        const libcrypt::shamir_user_params reciever_params = shamir_gen_user_params(mod);
 
-    int64_t mod = mod_part_P * mod_part_Q;
-    int64_t recv_private_key = gcd_result.back();
+        shamir_encrypt(
+            mod, reciever_params.relative_prime, sender_params.relative_prime, message_file, encryption_file);
 
-    if (recv_private_key < 0)
-    {
-        recv_private_key += euler_func_res;
+        encryption_file.seekp(0, std::ios::beg);
+
+        shamir_decrypt(mod, reciever_params.inversion, sender_params.inversion, encryption_file, decryption_file);
     }
 
-    std::ifstream message_file(message_filename, std::ios::binary);
-    if (!message_file.is_open())
+    if (parse_cmd_line.count("elgamal"))
     {
-        throw std::runtime_error{'"' + message_filename + '"' + " not found"};
+        libcrypt::dh_system_params sys_params = libcrypt::gen_dh_system();
+
+        std::random_device rd;
+        std::mt19937 mt(rd());
+        std::uniform_int_distribution<int64_t> private_key_range(2, sys_params.mod - 2);
+        std::uniform_int_distribution<int64_t> session_key_range(1, sys_params.mod - 2);
+
+        int64_t recv_private_key = private_key_range(mt);
+        int64_t recv_shared_key = libcrypt::pow_mod(sys_params.base, recv_private_key, sys_params.mod);
+        int64_t session_key = 0;
+
+        libcrypt::elgamal_encrypt(sys_params, session_key, recv_shared_key, message_file, encryption_file);
+
+        encryption_file.seekp(0, std::ios::beg);
+
+        libcrypt::elgamal_decrypt(sys_params.mod, recv_private_key, encryption_file, decryption_file);
     }
 
-    std::fstream encryption_file(encrypt_filename, std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
-    if (!encryption_file.is_open())
+    if (parse_cmd_line.count("vernam"))
     {
-        throw std::runtime_error{'"' + encrypt_filename + '"' + " not found"};
+        const std::filesystem::path vernam_key_path = parse_cmd_line["vernam_key"].as<std::string>();
+
+        std::random_device rd;
+        std::mt19937 mt(rd());
+        std::uniform_int_distribution<int16_t> randomizer(CHAR_MIN, CHAR_MAX);
+
+        std::fstream vernam_key_file(
+            vernam_key_path, std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
+        if (!vernam_key_file.is_open())
+        {
+            throw std::runtime_error{'"' + vernam_key_path.string() + '"' + " not found"};
+        }
+
+        for (uintmax_t i = 0; i < std::filesystem::file_size(message_path); i++)
+        {
+            char rand = static_cast<char>(randomizer(mt));
+            vernam_key_file.write(reinterpret_cast<const char*>(&rand), sizeof(char));
+        }
+
+        vernam_key_file.seekp(0, std::ios::beg);
+
+        libcrypt::vernam_encrypt(vernam_key_file, message_file, encryption_file);
+
+        encryption_file.seekp(0, std::ios::beg);
+        vernam_key_file.seekp(0, std::ios::beg);
+
+        libcrypt::vernam_decrypt(vernam_key_file, encryption_file, decryption_file);
+
+        vernam_key_file.close();
     }
 
-    libcrypt::rsa_encrypt(mod, recv_shared_key, message_file, encryption_file);
+    if (parse_cmd_line.count("rsa"))
+    {
+        constexpr int64_t recv_shared_key = 3;
+        std::vector<int64_t> gcd_result;
+
+        std::random_device rd;
+        std::mt19937 mt(rd());
+        std::uniform_int_distribution<int64_t> prime_gen_range(UINT8_MAX, INT16_MAX);
+
+        int64_t mod_part_P = 0;
+        int64_t mod_part_Q = 0;
+        int64_t euler_func_res = 0;
+
+        do
+        {
+            do
+            {
+                mod_part_P = prime_gen_range(mt);
+            } while (!libcrypt::is_prime(mod_part_P));
+
+            do
+            {
+                mod_part_Q = prime_gen_range(mt);
+            } while (!libcrypt::is_prime(mod_part_Q));
+
+            euler_func_res = (mod_part_P - 1) * (mod_part_Q - 1);
+            gcd_result = libcrypt::extended_gcd(recv_shared_key, euler_func_res);
+        } while (gcd_result.front() != 1);
+
+        int64_t mod = mod_part_P * mod_part_Q;
+        int64_t recv_private_key = gcd_result.back();
+
+        if (recv_private_key < 0)
+        {
+            recv_private_key += euler_func_res;
+        }
+
+        libcrypt::rsa_encrypt(mod, recv_shared_key, message_file, encryption_file);
+
+        encryption_file.seekp(0, std::ios::beg);
+
+        libcrypt::rsa_decrypt(mod, recv_private_key, encryption_file, decryption_file);
+    }
 
     message_file.close();
-    encryption_file.seekp(0, std::ios::beg);
-
-    std::ofstream decryption_file(decrypt_filename, std::ios::binary);
-    if (!decryption_file.is_open())
-    {
-        throw std::runtime_error{'"' + decrypt_filename + '"' + " not found"};
-    }
-
-    libcrypt::rsa_decrypt(mod, recv_private_key, encryption_file, decryption_file);
-
     encryption_file.close();
     decryption_file.close();
 }
