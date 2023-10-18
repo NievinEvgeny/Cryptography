@@ -91,7 +91,7 @@ void cipher_call_example(const cxxopts::ParseResult& parse_cmd_line)
 
         int64_t recv_private_key = private_key_range(mt);
         int64_t recv_shared_key = libcrypt::pow_mod(sys_params.base, recv_private_key, sys_params.mod);
-        int64_t session_key = 0;
+        int64_t session_key = session_key_range(mt);
 
         libcrypt::elgamal_encrypt(sys_params, session_key, recv_shared_key, message_file, encryption_file);
 
