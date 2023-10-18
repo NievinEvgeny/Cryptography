@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <exception>
 
+#include <iostream>
+
 namespace libcrypt {
 
 void shamir_encrypt(
@@ -49,12 +51,11 @@ void elgamal_encrypt(
 {
     char message_part = 0;
 
+    int64_t ciphertext_first = libcrypt::pow_mod(sys_params.base, session_key, sys_params.mod);
+    encrypt_file.write(reinterpret_cast<const char*>(&ciphertext_first), sizeof(int64_t));
+
     while (message_file.read(reinterpret_cast<char*>(&message_part), sizeof(message_part)))
     {
-        int64_t ciphertext_first = libcrypt::pow_mod(sys_params.base, session_key, sys_params.mod);
-
-        encrypt_file.write(reinterpret_cast<const char*>(&ciphertext_first), sizeof(int64_t));
-
         int64_t ciphertext_second
             = ((static_cast<int64_t>(message_part) % sys_params.mod)
                * (libcrypt::pow_mod(recv_shared_key, session_key, sys_params.mod) % sys_params.mod))
@@ -69,8 +70,9 @@ void elgamal_decrypt(int64_t mod, int64_t recv_private_key, std::fstream& encryp
     int64_t ciphertext_first = 0;
     int64_t ciphertext_second = 0;
 
-    while (encrypt_file.read(reinterpret_cast<char*>(&ciphertext_first), sizeof(ciphertext_first))
-           && encrypt_file.read(reinterpret_cast<char*>(&ciphertext_second), sizeof(ciphertext_second)))
+    encrypt_file.read(reinterpret_cast<char*>(&ciphertext_first), sizeof(ciphertext_first));
+
+    while (encrypt_file.read(reinterpret_cast<char*>(&ciphertext_second), sizeof(ciphertext_second)))
     {
         decrypt_file << static_cast<char>(
             ((ciphertext_second % mod) * (libcrypt::pow_mod(ciphertext_first, mod - 1 - recv_private_key, mod) % mod))
