@@ -45,10 +45,7 @@
     "testPresets": [
         {
             "name": "tests",
-            "configurePreset": "tests",
-            "execution": {
-                "jobs": 4
-            }
+            "configurePreset": "tests"
         }
     ]
 }
