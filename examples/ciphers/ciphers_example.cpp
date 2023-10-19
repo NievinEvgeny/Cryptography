@@ -72,12 +72,13 @@ void cipher_call_example(const cxxopts::ParseResult& parse_cmd_line)
         const libcrypt::shamir_user_params sender_params = shamir_gen_user_params(mod);
         const libcrypt::shamir_user_params reciever_params = shamir_gen_user_params(mod);
 
-        shamir_encrypt(
+        libcrypt::shamir_encrypt(
             mod, reciever_params.relative_prime, sender_params.relative_prime, message_file, encryption_file);
 
         encryption_file.seekp(0, std::ios::beg);
 
-        shamir_decrypt(mod, reciever_params.inversion, sender_params.inversion, encryption_file, decryption_file);
+        libcrypt::shamir_decrypt(
+            mod, reciever_params.inversion, sender_params.inversion, encryption_file, decryption_file);
     }
 
     if (parse_cmd_line.count("elgamal"))
