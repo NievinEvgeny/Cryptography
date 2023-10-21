@@ -19,4 +19,5 @@ target_include_directories(
     ${target_name}
     PUBLIC
     ${PROJECT_SOURCE_DIR}/include/
+    ${PROJECT_SOURCE_DIR}/examples/
 )
