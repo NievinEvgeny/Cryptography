@@ -3,6 +3,8 @@ set(target_name examples)
 add_library(${target_name} STATIC
     ciphers/ciphers_example.cpp
     ciphers/ciphers_example.hpp
+    params/gen_params.cpp
+    params/gen_params.hpp
 )
 
 include(CompileOptions)
