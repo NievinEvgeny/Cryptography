@@ -4,8 +4,6 @@
 #include <cstdint>
 #include <exception>
 
-#include <iostream>
-
 namespace libcrypt {
 
 void shamir_encrypt(
