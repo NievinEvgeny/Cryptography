@@ -80,9 +80,6 @@ TEST_F(CiphersTest, shamir_with_different_files_size)
 
     for (auto& file : files)
     {
-        file.clear();
-        file.seekg(std::ios::beg);
-
         std::fstream encryption_file(
             temp_dir + "/shamir_e.txt", std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
 
@@ -141,9 +138,6 @@ TEST_F(CiphersTest, elgamal_with_different_files_size)
 
     for (auto& file : files)
     {
-        file.clear();
-        file.seekg(std::ios::beg);
-
         std::fstream encryption_file(
             temp_dir + "/elgamal_e.txt", std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
 
@@ -205,9 +199,6 @@ TEST_F(CiphersTest, vernam_with_different_files_size)
 
     for (auto& file : files)
     {
-        file.clear();
-        file.seekg(std::ios::beg);
-
         std::fstream vernam_key_file(
             temp_dir + "/vernam_key.txt", std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
 
@@ -280,9 +271,6 @@ TEST_F(CiphersTest, rsa_with_different_files_size)
 
     for (auto& file : files)
     {
-        file.clear();
-        file.seekg(std::ios::beg);
-
         std::fstream encryption_file(
             temp_dir + "/rsa_e.txt", std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
 
