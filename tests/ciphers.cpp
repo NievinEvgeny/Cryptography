@@ -1,14 +1,30 @@
 #include <libcrypt/utils.hpp>
 #include <libcrypt/ciphers.hpp>
+#include <libcrypt/signatures.hpp>
 #include <params/gen_params.hpp>
 #include <PicoSHA2/picosha2.h>
 #include <gtest/gtest.h>
 #include <string>
+#include <vector>
 #include <filesystem>
+#include <iterator>
 #include <fstream>
 #include <random>
 #include <cstdint>
 #include <climits>
+
+namespace {
+
+std::string calc_file_hash(std::ifstream& file)
+{
+    std::vector<unsigned char> bin_file_hash(picosha2::k_digest_size);
+    picosha2::hash256(
+        std::istreambuf_iterator<char>(file),
+        std::istreambuf_iterator<char>(),
+        bin_file_hash.begin(),
+        bin_file_hash.end());
+    return picosha2::bytes_to_hex_string(bin_file_hash.begin(), bin_file_hash.end());
+}
 
 class CiphersTest : public testing::Test
 {
@@ -110,17 +126,8 @@ TEST_F(CiphersTest, shamir_with_different_files_size)
         file.clear();
         file.seekg(std::ios::beg);
 
-        picosha2::hash256_one_by_one message_hasher;
-        message_hasher.process(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-        message_hasher.finish();
-        std::string message_hash;
-        picosha2::get_hash_hex_string(message_hasher, message_hash);
-
-        picosha2::hash256_one_by_one decryption_hasher;
-        decryption_hasher.process(std::istreambuf_iterator<char>(decryption_file_in), std::istreambuf_iterator<char>());
-        decryption_hasher.finish();
-        std::string decrypted_hash;
-        picosha2::get_hash_hex_string(decryption_hasher, decrypted_hash);
+        std::string message_hash{calc_file_hash(file)};
+        std::string decrypted_hash{calc_file_hash(decryption_file_in)};
 
         ASSERT_EQ(message_hash, decrypted_hash);
 
@@ -169,17 +176,8 @@ TEST_F(CiphersTest, elgamal_with_different_files_size)
         file.clear();
         file.seekg(std::ios::beg);
 
-        picosha2::hash256_one_by_one message_hasher;
-        message_hasher.process(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-        message_hasher.finish();
-        std::string message_hash;
-        picosha2::get_hash_hex_string(message_hasher, message_hash);
-
-        picosha2::hash256_one_by_one decryption_hasher;
-        decryption_hasher.process(std::istreambuf_iterator<char>(decryption_file_in), std::istreambuf_iterator<char>());
-        decryption_hasher.finish();
-        std::string decrypted_hash;
-        picosha2::get_hash_hex_string(decryption_hasher, decrypted_hash);
+        std::string message_hash{calc_file_hash(file)};
+        std::string decrypted_hash{calc_file_hash(decryption_file_in)};
 
         ASSERT_EQ(message_hash, decrypted_hash);
 
@@ -241,17 +239,8 @@ TEST_F(CiphersTest, vernam_with_different_files_size)
         file.clear();
         file.seekg(std::ios::beg);
 
-        picosha2::hash256_one_by_one message_hasher;
-        message_hasher.process(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-        message_hasher.finish();
-        std::string message_hash;
-        picosha2::get_hash_hex_string(message_hasher, message_hash);
-
-        picosha2::hash256_one_by_one decryption_hasher;
-        decryption_hasher.process(std::istreambuf_iterator<char>(decryption_file_in), std::istreambuf_iterator<char>());
-        decryption_hasher.finish();
-        std::string decrypted_hash;
-        picosha2::get_hash_hex_string(decryption_hasher, decrypted_hash);
+        std::string message_hash{calc_file_hash(file)};
+        std::string decrypted_hash{calc_file_hash(decryption_file_in)};
 
         ASSERT_EQ(message_hash, decrypted_hash);
 
@@ -300,17 +289,8 @@ TEST_F(CiphersTest, rsa_with_different_files_size)
         file.clear();
         file.seekg(std::ios::beg);
 
-        picosha2::hash256_one_by_one message_hasher;
-        message_hasher.process(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-        message_hasher.finish();
-        std::string message_hash;
-        picosha2::get_hash_hex_string(message_hasher, message_hash);
-
-        picosha2::hash256_one_by_one decryption_hasher;
-        decryption_hasher.process(std::istreambuf_iterator<char>(decryption_file_in), std::istreambuf_iterator<char>());
-        decryption_hasher.finish();
-        std::string decrypted_hash;
-        picosha2::get_hash_hex_string(decryption_hasher, decrypted_hash);
+        std::string message_hash{calc_file_hash(file)};
+        std::string decrypted_hash{calc_file_hash(decryption_file_in)};
 
         ASSERT_EQ(message_hash, decrypted_hash);
 
@@ -321,3 +301,5 @@ TEST_F(CiphersTest, rsa_with_different_files_size)
         std::filesystem::remove(temp_dir + "/rsa_d.txt");
     }
 }
+
+}  // namespace
