@@ -8,27 +8,27 @@ namespace libcrypt {
 
 libcrypt::crypt_user_params shamir_gen_user_params(int64_t mod)
 {
-    int64_t relative_prime = 0;
+    int64_t private_key = 0;
     std::vector<int64_t> gcd_result;
 
     std::random_device rd;
     std::mt19937 mt(rd());
-    std::uniform_int_distribution<int64_t> rel_prime_range(INT16_MAX, mod - 1);
+    std::uniform_int_distribution<int64_t> private_key_range(INT16_MAX, mod - 1);
 
     do
     {
-        relative_prime = rel_prime_range(mt);
-        gcd_result = libcrypt::extended_gcd(mod - 1, relative_prime);
+        private_key = private_key_range(mt);
+        gcd_result = libcrypt::extended_gcd(mod - 1, private_key);
     } while (gcd_result.front() != 1);
 
-    int64_t inversion = gcd_result.back();
+    int64_t shared_key = gcd_result.back();
 
-    if (inversion < 0)
+    if (shared_key < 0)
     {
-        inversion += mod - 1;
+        shared_key += mod - 1;
     }
 
-    return {relative_prime, inversion};
+    return {private_key, shared_key};
 }
 
 libcrypt::shamir_sys_params shamir_gen_sys()
