@@ -2,6 +2,7 @@
 #include <params/gen_params.hpp>
 #include <libcrypt/ciphers.hpp>
 #include <libcrypt/utils.hpp>
+#include <cxxopts.hpp>
 #include <fstream>
 #include <climits>
 #include <random>
@@ -51,11 +52,11 @@ void cipher_call_example(const cxxopts::ParseResult& parse_cmd_line)
         libcrypt::elgamal_sys_params params = libcrypt::elgamal_gen_sys();
 
         libcrypt::elgamal_encrypt(
-            params.dh_sys_params, params.session_key, params.recv.shared_key, message_file, encryption_file);
+            params.dh_sys_params, params.session_key, params.user.shared_key, message_file, encryption_file);
 
         encryption_file.seekp(0, std::ios::beg);
 
-        libcrypt::elgamal_decrypt(params.dh_sys_params.mod, params.recv.private_key, encryption_file, decryption_file);
+        libcrypt::elgamal_decrypt(params.dh_sys_params.mod, params.user.private_key, encryption_file, decryption_file);
     }
 
     if (parse_cmd_line.count("vernam"))
@@ -96,11 +97,11 @@ void cipher_call_example(const cxxopts::ParseResult& parse_cmd_line)
     {
         libcrypt::rsa_sys_params params = libcrypt::rsa_gen_sys();
 
-        libcrypt::rsa_encrypt(params.mod, params.recv.shared_key, message_file, encryption_file);
+        libcrypt::rsa_encrypt(params.mod, params.user.shared_key, message_file, encryption_file);
 
         encryption_file.seekp(0, std::ios::beg);
 
-        libcrypt::rsa_decrypt(params.mod, params.recv.private_key, encryption_file, decryption_file);
+        libcrypt::rsa_decrypt(params.mod, params.user.private_key, encryption_file, decryption_file);
     }
 
     message_file.close();

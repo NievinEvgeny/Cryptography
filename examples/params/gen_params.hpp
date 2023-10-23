@@ -20,13 +20,13 @@ struct shamir_sys_params
 struct elgamal_sys_params
 {
     libcrypt::dh_system_params dh_sys_params;
-    libcrypt::crypt_user_params recv;
+    libcrypt::crypt_user_params user;
     int64_t session_key;
 };
 
 struct rsa_sys_params
 {
-    libcrypt::crypt_user_params recv;
+    libcrypt::crypt_user_params user;
     int64_t mod;
 };
 
