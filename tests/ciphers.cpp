@@ -156,13 +156,13 @@ TEST_F(CiphersTest, elgamal_with_different_files_size)
         }
 
         libcrypt::elgamal_encrypt(
-            params.dh_sys_params, params.session_key, params.recv.shared_key, file, encryption_file);
+            params.dh_sys_params, params.session_key, params.user.shared_key, file, encryption_file);
 
         encryption_file.clear();
         encryption_file.seekp(0, std::ios::beg);
 
         libcrypt::elgamal_decrypt(
-            params.dh_sys_params.mod, params.recv.private_key, encryption_file, decryption_file_out);
+            params.dh_sys_params.mod, params.user.private_key, encryption_file, decryption_file_out);
 
         decryption_file_out.close();
 
@@ -270,12 +270,12 @@ TEST_F(CiphersTest, rsa_with_different_files_size)
             throw std::runtime_error{"Can't open file in rsa cipher test"};
         }
 
-        libcrypt::rsa_encrypt(params.mod, params.recv.shared_key, file, encryption_file);
+        libcrypt::rsa_encrypt(params.mod, params.user.shared_key, file, encryption_file);
 
         encryption_file.clear();
         encryption_file.seekp(0, std::ios::beg);
 
-        libcrypt::rsa_decrypt(params.mod, params.recv.private_key, encryption_file, decryption_file_out);
+        libcrypt::rsa_decrypt(params.mod, params.user.private_key, encryption_file, decryption_file_out);
 
         decryption_file_out.close();
 
