@@ -5,6 +5,8 @@ add_library(${target_name} STATIC
     ${PROJECT_SOURCE_DIR}/include/libcrypt/utils.hpp
     ciphers.cpp
     ${PROJECT_SOURCE_DIR}/include/libcrypt/ciphers.hpp
+    signatures.cpp
+    ${PROJECT_SOURCE_DIR}/include/libcrypt/signatures.hpp
 )
 
 include(CompileOptions)
@@ -14,4 +16,5 @@ target_include_directories(
     ${target_name}
     PUBLIC
     ${PROJECT_SOURCE_DIR}/include/
+    ${PROJECT_SOURCE_DIR}/external/
 )
