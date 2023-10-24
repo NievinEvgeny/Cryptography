@@ -58,9 +58,14 @@ libcrypt::elgamal_sys_params elgamal_gen_sys()
     std::uniform_int_distribution<int64_t> private_key_range(2, dh_sys_params.mod - 2);
     std::uniform_int_distribution<int64_t> session_key_range(1, dh_sys_params.mod - 2);
 
+    int64_t session_key = 0;
     int64_t recv_private_key = private_key_range(mt);
     int64_t recv_shared_key = libcrypt::pow_mod(dh_sys_params.base, recv_private_key, dh_sys_params.mod);
-    int64_t session_key = session_key_range(mt);
+
+    do
+    {
+        session_key = session_key_range(mt);
+    } while (libcrypt::extended_gcd(session_key, dh_sys_params.mod - 1).front() != 1);
 
     return {dh_sys_params, {recv_private_key, recv_shared_key}, session_key};
 }
