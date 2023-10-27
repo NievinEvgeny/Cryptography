@@ -7,6 +7,7 @@
 #include <vector>
 #include <cstdint>
 #include <limits>
+#include <cstdio>
 
 namespace libcrypt {
 
@@ -17,11 +18,6 @@ static inline int64_t mod(int64_t value, int64_t mod)
     int64_t m = value % mod;
     mod &= m >> std::numeric_limits<int64_t>::digits;
     return m + mod;
-}
-
-static std::string calc_str_hash(const std::string& str)
-{
-    return picosha2::hash256_hex_string(str);
 }
 
 static std::string calc_file_hash(std::fstream& file)
@@ -48,9 +44,16 @@ void rsa_file_signing(int64_t mod, int64_t send_private_key, std::fstream& file)
 
 bool rsa_check_file_sign(int64_t mod, int64_t send_shared_key, std::fstream& file)
 {
-    std::string file_data{(std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()};
-    file_data.erase(file_data.end() - file_hash_size, file_data.end());
-    std::string file_hash{libcrypt::calc_str_hash(file_data)};
+    file.seekg(-1 * file_hash_size, std::ios::end);
+    const int64_t data_size = file.tellg();
+    file.seekg(std::ios::beg);
+
+    std::fstream file_data("tmp.txt", std::ios::binary | std::ios::out | std::ios::in | std::ios::app);
+    std::copy_n(std::istreambuf_iterator<char>(file), data_size, std::ostreambuf_iterator<char>(file_data));
+
+    file_data.seekg(std::ios::beg);
+
+    std::string file_hash{libcrypt::calc_file_hash(file_data)};
 
     file.seekg(-1 * file_hash_size, std::ios::end);
 
@@ -61,9 +64,11 @@ bool rsa_check_file_sign(int64_t mod, int64_t send_shared_key, std::fstream& fil
 
         if (hash_part != libcrypt::pow_mod(encrypted_hash_part, send_shared_key, mod))
         {
+            static_cast<void>(std::remove("tmp.txt"));
             return false;
         }
     }
+    static_cast<void>(std::remove("tmp.txt"));
     return true;
 }
 
@@ -96,9 +101,16 @@ bool elgamal_check_file_sign(libcrypt::dh_system_params sys_params, int64_t recv
 {
     constexpr int64_t ciphertext_size = file_hash_size + sizeof(int64_t);
 
-    std::string file_data{(std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()};
-    file_data.erase(file_data.end() - ciphertext_size, file_data.end());
-    std::string file_hash{libcrypt::calc_str_hash(file_data)};
+    file.seekg(-1 * ciphertext_size, std::ios::end);
+    const int64_t data_size = file.tellg();
+    file.seekg(std::ios::beg);
+
+    std::fstream file_data("tmp.txt", std::ios::binary | std::ios::out | std::ios::in | std::ios::app);
+    std::copy_n(std::istreambuf_iterator<char>(file), data_size, std::ostreambuf_iterator<char>(file_data));
+
+    file_data.seekg(std::ios::beg);
+
+    std::string file_hash{libcrypt::calc_file_hash(file_data)};
 
     file.seekg(-1 * ciphertext_size, std::ios::end);
 
@@ -116,9 +128,11 @@ bool elgamal_check_file_sign(libcrypt::dh_system_params sys_params, int64_t recv
                     * libcrypt::pow_mod(ciphertext_first, encrypted_hash_part, sys_params.mod),
                 sys_params.mod))
         {
+            static_cast<void>(std::remove("tmp.txt"));
             return false;
         }
     }
+    static_cast<void>(std::remove("tmp.txt"));
     return true;
 }
 
