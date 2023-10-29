@@ -12,7 +12,7 @@
 
 namespace libcrypt {
 
-constexpr int64_t file_hash_size = 64 * sizeof(int64_t);
+constexpr int64_t file_hash_size = 64 * sizeof(int32_t);
 
 static inline int64_t mod(int64_t value, int64_t mod)
 {
@@ -38,8 +38,9 @@ void rsa_file_signing(int64_t mod, int64_t send_private_key, std::fstream& file)
 
     for (const char& hash_part : file_hash)
     {
-        int64_t encrypted_hash_part = libcrypt::pow_mod(static_cast<int64_t>(hash_part), send_private_key, mod);
-        file.write(reinterpret_cast<const char*>(&encrypted_hash_part), sizeof(int64_t));
+        auto signed_hash_part
+            = static_cast<int32_t>(libcrypt::pow_mod(static_cast<int64_t>(hash_part), send_private_key, mod));
+        file.write(reinterpret_cast<const char*>(&signed_hash_part), sizeof(signed_hash_part));
     }
 }
 
@@ -60,10 +61,10 @@ bool rsa_check_file_sign(int64_t mod, int64_t send_shared_key, std::fstream& fil
 
     for (const auto& hash_part : file_hash)
     {
-        int64_t encrypted_hash_part = 0;
-        file.read(reinterpret_cast<char*>(&encrypted_hash_part), sizeof(int64_t));
+        int32_t signed_hash_part = 0;
+        file.read(reinterpret_cast<char*>(&signed_hash_part), sizeof(signed_hash_part));
 
-        if (hash_part != libcrypt::pow_mod(encrypted_hash_part, send_shared_key, mod))
+        if (hash_part != libcrypt::pow_mod(static_cast<int64_t>(signed_hash_part), send_shared_key, mod))
         {
             static_cast<void>(std::remove("tmp.txt"));
             return false;
@@ -81,25 +82,25 @@ void elgamal_file_signing(
 {
     const std::string file_hash{libcrypt::calc_file_hash(file)};
 
-    const int64_t sign_first = libcrypt::pow_mod(sys_params.base, session_key, sys_params.mod);
-    file.write(reinterpret_cast<const char*>(&sign_first), sizeof(int64_t));
+    const auto sign_first = static_cast<int32_t>(libcrypt::pow_mod(sys_params.base, session_key, sys_params.mod));
+    file.write(reinterpret_cast<const char*>(&sign_first), sizeof(sign_first));
 
     const int64_t inv_session_key = libcrypt::extended_gcd(sys_params.mod - 1, session_key).back();
 
     for (const auto& hash_part : file_hash)
     {
-        const int64_t encrypted_hash_part = libcrypt::mod(
+        const auto signed_hash_part = static_cast<int32_t>(libcrypt::mod(
             inv_session_key
                 * (libcrypt::mod(static_cast<int64_t>(hash_part) - recv_private_key * sign_first, sys_params.mod - 1)),
-            sys_params.mod - 1);
+            sys_params.mod - 1));
 
-        file.write(reinterpret_cast<const char*>(&encrypted_hash_part), sizeof(int64_t));
+        file.write(reinterpret_cast<const char*>(&signed_hash_part), sizeof(signed_hash_part));
     }
 }
 
 bool elgamal_check_file_sign(libcrypt::dh_system_params sys_params, int64_t recv_shared_key, std::fstream& file)
 {
-    constexpr int64_t sign_size = file_hash_size + sizeof(int64_t);
+    constexpr int64_t sign_size = file_hash_size + sizeof(int32_t);
 
     file.seekg(-1 * sign_size, std::ios::end);
     const int64_t data_size = file.tellg();
@@ -114,18 +115,18 @@ bool elgamal_check_file_sign(libcrypt::dh_system_params sys_params, int64_t recv
 
     file.seekg(-1 * sign_size, std::ios::end);
 
-    int64_t sign_first = 0;
-    file.read(reinterpret_cast<char*>(&sign_first), sizeof(int64_t));
+    int32_t sign_first = 0;
+    file.read(reinterpret_cast<char*>(&sign_first), sizeof(sign_first));
 
     for (const auto& hash_part : file_hash)
     {
-        int64_t encrypted_hash_part = 0;
-        file.read(reinterpret_cast<char*>(&encrypted_hash_part), sizeof(int64_t));
+        int32_t signed_hash_part = 0;
+        file.read(reinterpret_cast<char*>(&signed_hash_part), sizeof(signed_hash_part));
 
         if (libcrypt::pow_mod(sys_params.base, static_cast<int64_t>(hash_part), sys_params.mod)
             != libcrypt::mod(
                 libcrypt::pow_mod(recv_shared_key, sign_first, sys_params.mod)
-                    * libcrypt::pow_mod(sign_first, encrypted_hash_part, sys_params.mod),
+                    * libcrypt::pow_mod(sign_first, static_cast<int64_t>(signed_hash_part), sys_params.mod),
                 sys_params.mod))
         {
             static_cast<void>(std::remove("tmp.txt"));
@@ -142,12 +143,12 @@ static bool gost_hash_to_sign(
     int64_t rand_num,
     int64_t send_private_key,
     int64_t elliptic_exp,
-    std::vector<int64_t>& signature)
+    std::vector<int32_t>& signature)
 {
     for (char i = 1; i < sign_length; i++)
     {
-        signature.emplace_back(
-            libcrypt::mod(rand_num * file_hash.at(i - 1) + send_private_key * signature.at(0), elliptic_exp));
+        signature.emplace_back(static_cast<int32_t>(
+            libcrypt::mod(rand_num * file_hash.at(i - 1) + send_private_key * signature.at(0), elliptic_exp)));
 
         if (signature[i] == 0)
         {
@@ -165,8 +166,8 @@ void gost_file_signing(
     int64_t send_private_key,
     std::fstream& file)
 {
-    constexpr int16_t sign_size = file_hash_size + sizeof(int64_t);
-    constexpr int8_t sign_length = sign_size / sizeof(int64_t);
+    constexpr int16_t sign_size = file_hash_size + sizeof(int32_t);
+    constexpr int8_t sign_length = sign_size / sizeof(int32_t);
 
     const std::string file_hash{libcrypt::calc_file_hash(file)};
 
@@ -177,10 +178,11 @@ void gost_file_signing(
     while (true)
     {
         int64_t rand_num = rand_num_gen_range(mt);
-        std::vector<int64_t> signature;
+        std::vector<int32_t> signature;
         signature.reserve(sign_length);
 
-        signature.emplace_back(libcrypt::mod(libcrypt::pow_mod(elliptic_coef, rand_num, mod), elliptic_exp));
+        signature.emplace_back(
+            static_cast<int32_t>(libcrypt::mod(libcrypt::pow_mod(elliptic_coef, rand_num, mod), elliptic_exp)));
 
         if (signature[0] == 0)
         {
@@ -205,7 +207,7 @@ bool gost_check_file_sign(
     int64_t send_shared_key,
     std::fstream& file)
 {
-    constexpr int64_t sign_size = file_hash_size + sizeof(int64_t);
+    constexpr int64_t sign_size = file_hash_size + sizeof(int32_t);
 
     file.seekg(-1 * sign_size, std::ios::end);
     const int64_t data_size = file.tellg();
@@ -220,8 +222,8 @@ bool gost_check_file_sign(
 
     file.seekg(-1 * sign_size, std::ios::end);
 
-    int64_t sign_first = 0;
-    file.read(reinterpret_cast<char*>(&sign_first), sizeof(int64_t));
+    int32_t sign_first = 0;
+    file.read(reinterpret_cast<char*>(&sign_first), sizeof(int32_t));
 
     if ((sign_first <= 0) || (sign_first >= elliptic_exp))
     {
@@ -230,10 +232,10 @@ bool gost_check_file_sign(
 
     for (const auto& hash_part : file_hash)
     {
-        int64_t encrypted_hash_part = 0;
-        file.read(reinterpret_cast<char*>(&encrypted_hash_part), sizeof(int64_t));
+        int32_t signed_hash_part = 0;
+        file.read(reinterpret_cast<char*>(&signed_hash_part), sizeof(signed_hash_part));
 
-        if ((encrypted_hash_part <= 0) || (encrypted_hash_part >= elliptic_exp))
+        if ((signed_hash_part <= 0) || (signed_hash_part >= elliptic_exp))
         {
             return false;
         }
@@ -243,9 +245,11 @@ bool gost_check_file_sign(
         if (sign_first
             != libcrypt::mod(
                 libcrypt::mod(
-                    libcrypt::pow_mod(elliptic_coef, libcrypt::mod(encrypted_hash_part * inversion, elliptic_exp), mod)
+                    libcrypt::pow_mod(elliptic_coef, libcrypt::mod(signed_hash_part * inversion, elliptic_exp), mod)
                         * libcrypt::pow_mod(
-                            send_shared_key, libcrypt::mod(-1 * sign_first * inversion, elliptic_exp), mod),
+                            send_shared_key,
+                            libcrypt::mod(-1 * static_cast<int64_t>(sign_first) * inversion, elliptic_exp),
+                            mod),
                     mod),
                 elliptic_exp))
         {
