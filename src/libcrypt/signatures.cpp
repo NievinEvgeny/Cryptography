@@ -51,6 +51,12 @@ bool rsa_check_file_sign(int64_t mod, int64_t send_shared_key, std::fstream& fil
     file.seekg(std::ios::beg);
 
     std::fstream file_data("tmp.txt", std::ios::binary | std::ios::out | std::ios::in | std::ios::app);
+
+    if (!file_data.is_open())
+    {
+        throw std::runtime_error{"can't create tmp buf file in rsa sign\n"};
+    }
+
     std::copy_n(std::istreambuf_iterator<char>(file), data_size, std::ostreambuf_iterator<char>(file_data));
 
     file_data.seekg(std::ios::beg);
@@ -107,6 +113,12 @@ bool elgamal_check_file_sign(libcrypt::dh_system_params sys_params, int64_t recv
     file.seekg(std::ios::beg);
 
     std::fstream file_data("tmp.txt", std::ios::binary | std::ios::out | std::ios::in | std::ios::app);
+
+    if (!file_data.is_open())
+    {
+        throw std::runtime_error{"can't create tmp buf file in elgamal sign\n"};
+    }
+
     std::copy_n(std::istreambuf_iterator<char>(file), data_size, std::ostreambuf_iterator<char>(file_data));
 
     file_data.seekg(std::ios::beg);
@@ -214,6 +226,12 @@ bool gost_check_file_sign(
     file.seekg(std::ios::beg);
 
     std::fstream file_data("tmp.txt", std::ios::binary | std::ios::out | std::ios::in | std::ios::app);
+
+    if (!file_data.is_open())
+    {
+        throw std::runtime_error{"can't create tmp buf file in gost sign\n"};
+    }
+
     std::copy_n(std::istreambuf_iterator<char>(file), data_size, std::ostreambuf_iterator<char>(file_data));
 
     file_data.seekg(std::ios::beg);
