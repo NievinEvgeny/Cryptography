@@ -17,10 +17,10 @@ void shamir_encrypt(
 
     while (message_file.read(reinterpret_cast<char*>(&message_part), sizeof(message_part)))
     {
-        int64_t encrypted_part = libcrypt::pow_mod(
-            libcrypt::pow_mod(static_cast<int64_t>(message_part), send_private_key, mod), recv_private_key, mod);
+        auto encrypted_part = static_cast<int32_t>(libcrypt::pow_mod(
+            libcrypt::pow_mod(static_cast<int64_t>(message_part), send_private_key, mod), recv_private_key, mod));
 
-        encrypt_file.write(reinterpret_cast<const char*>(&encrypted_part), sizeof(int64_t));
+        encrypt_file.write(reinterpret_cast<const char*>(&encrypted_part), sizeof(encrypted_part));
     }
 }
 
@@ -31,7 +31,7 @@ void shamir_decrypt(
     std::fstream& encrypt_file,
     std::ofstream& decrypt_file)
 {
-    int64_t message_part = 0;
+    int32_t message_part = 0;
 
     while (encrypt_file.read(reinterpret_cast<char*>(&message_part), sizeof(message_part)))
     {
@@ -49,24 +49,24 @@ void elgamal_encrypt(
 {
     char message_part = 0;
 
-    int64_t ciphertext_first = libcrypt::pow_mod(sys_params.base, session_key, sys_params.mod);
-    encrypt_file.write(reinterpret_cast<const char*>(&ciphertext_first), sizeof(int64_t));
+    auto ciphertext_first = static_cast<int32_t>(libcrypt::pow_mod(sys_params.base, session_key, sys_params.mod));
+    encrypt_file.write(reinterpret_cast<const char*>(&ciphertext_first), sizeof(ciphertext_first));
 
     while (message_file.read(reinterpret_cast<char*>(&message_part), sizeof(message_part)))
     {
-        int64_t ciphertext_second
-            = ((static_cast<int64_t>(message_part) % sys_params.mod)
-               * (libcrypt::pow_mod(recv_shared_key, session_key, sys_params.mod) % sys_params.mod))
-            % sys_params.mod;
+        auto ciphertext_second = static_cast<int32_t>(
+            ((static_cast<int64_t>(message_part) % sys_params.mod)
+             * (libcrypt::pow_mod(recv_shared_key, session_key, sys_params.mod) % sys_params.mod))
+            % sys_params.mod);
 
-        encrypt_file.write(reinterpret_cast<const char*>(&ciphertext_second), sizeof(int64_t));
+        encrypt_file.write(reinterpret_cast<const char*>(&ciphertext_second), sizeof(ciphertext_second));
     }
 }
 
 void elgamal_decrypt(int64_t mod, int64_t recv_private_key, std::fstream& encrypt_file, std::ofstream& decrypt_file)
 {
-    int64_t ciphertext_first = 0;
-    int64_t ciphertext_second = 0;
+    int32_t ciphertext_first = 0;
+    int32_t ciphertext_second = 0;
 
     encrypt_file.read(reinterpret_cast<char*>(&ciphertext_first), sizeof(ciphertext_first));
 
@@ -121,14 +121,15 @@ void rsa_encrypt(int64_t mod, int64_t recv_shared_key, std::ifstream& message_fi
 
     while (message_file.read(reinterpret_cast<char*>(&message_part), sizeof(message_part)))
     {
-        int64_t encrypted_part = libcrypt::pow_mod(static_cast<int64_t>(message_part), recv_shared_key, mod);
-        encrypt_file.write(reinterpret_cast<const char*>(&encrypted_part), sizeof(int64_t));
+        auto encrypted_part
+            = static_cast<int32_t>(libcrypt::pow_mod(static_cast<int64_t>(message_part), recv_shared_key, mod));
+        encrypt_file.write(reinterpret_cast<const char*>(&encrypted_part), sizeof(encrypted_part));
     }
 }
 
 void rsa_decrypt(int64_t mod, int64_t recv_private_key, std::fstream& encrypt_file, std::ofstream& decrypt_file)
 {
-    int64_t message_part = 0;
+    int32_t message_part = 0;
 
     while (encrypt_file.read(reinterpret_cast<char*>(&message_part), sizeof(message_part)))
     {
