@@ -10,6 +10,7 @@ target_link_libraries(
     ${target_name}
     PRIVATE
     libcrypt
+    examples
     GTest::gtest_main
 )
 

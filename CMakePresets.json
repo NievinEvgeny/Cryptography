@@ -12,9 +12,17 @@
             "hidden": true
         },
         {
-            "name": "crypt",
+            "name": "release",
             "inherits": "base",
-            "binaryDir": "${sourceDir}/build/crypt",
+            "binaryDir": "${sourceDir}/build/release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "debug",
+            "inherits": "base",
+            "binaryDir": "${sourceDir}/build/debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
@@ -30,8 +38,14 @@
     ],
     "buildPresets": [
         {
-            "name": "crypt",
-            "configurePreset": "crypt",
+            "name": "release",
+            "configurePreset": "release",
+            "jobs": 4,
+            "targets": "cryptography"
+        },
+        {
+            "name": "debug",
+            "configurePreset": "debug",
             "jobs": 4,
             "targets": "cryptography"
         },
