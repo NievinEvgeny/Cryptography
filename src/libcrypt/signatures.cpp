@@ -38,7 +38,7 @@ void rsa_file_signing(int64_t mod, int64_t send_private_key, std::fstream& file)
 
     for (const char& hash_part : file_hash)
     {
-        auto signed_hash_part
+        const auto signed_hash_part
             = static_cast<int32_t>(libcrypt::pow_mod(static_cast<int64_t>(hash_part), send_private_key, mod));
         file.write(reinterpret_cast<const char*>(&signed_hash_part), sizeof(signed_hash_part));
     }
@@ -258,7 +258,7 @@ bool gost_check_file_sign(
             return false;
         }
 
-        int64_t inversion = libcrypt::extended_gcd(hash_part, elliptic_exp).back();
+        const int64_t inversion = libcrypt::extended_gcd(hash_part, elliptic_exp).back();
 
         if (sign_first
             != libcrypt::mod(
