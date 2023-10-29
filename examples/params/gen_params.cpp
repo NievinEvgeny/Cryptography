@@ -6,7 +6,7 @@
 
 namespace libcrypt {
 
-libcrypt::crypt_user_params shamir_gen_user_params(int64_t mod)
+static libcrypt::crypt_user_params shamir_gen_user_params(int64_t mod)
 {
     int64_t private_key = 0;
     std::vector<int64_t> gcd_result;
@@ -108,6 +108,49 @@ libcrypt::rsa_sys_params rsa_gen_sys()
     }
 
     return {{recv_private_key, recv_shared_key}, mod};
+}
+
+libcrypt::gost_sys_params gost_gen_sys()
+{
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_int_distribution<int64_t> elliptic_exp_gen_range(UINT16_MAX / 2 + 1, UINT16_MAX);
+
+    int64_t elliptic_exp = 0;
+
+    do
+    {
+        elliptic_exp = elliptic_exp_gen_range(mt);
+    } while (!libcrypt::is_prime(elliptic_exp));
+
+    std::uniform_int_distribution<int64_t> tmp_elliptic_coef_gen_range(INT16_MAX, INT32_MAX / elliptic_exp - 1);
+
+    int64_t tmp_elliptic_coef = 0;
+    int64_t mod = 0;
+
+    do
+    {
+        tmp_elliptic_coef = tmp_elliptic_coef_gen_range(mt);
+        mod = tmp_elliptic_coef * elliptic_exp + 1;
+    } while (!libcrypt::is_prime(mod));
+
+    std::uniform_int_distribution<int64_t> tmp_base_gen_range(1, mod - 1);
+
+    int64_t tmp_base = 0;
+    int64_t elliptic_coef = 0;
+
+    do
+    {
+        tmp_base = tmp_base_gen_range(mt);
+        elliptic_coef = libcrypt::pow_mod(tmp_base, tmp_elliptic_coef, mod);
+    } while (elliptic_coef <= 1);
+
+    std::uniform_int_distribution<int64_t> private_key_gen_range(1, elliptic_exp - 1);
+
+    int64_t send_private_key = private_key_gen_range(mt);
+    int64_t send_shared_key = libcrypt::pow_mod(elliptic_coef, send_private_key, mod);
+
+    return {{send_private_key, send_shared_key}, elliptic_exp, elliptic_coef, mod};
 }
 
 }  // namespace libcrypt

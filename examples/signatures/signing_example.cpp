@@ -41,6 +41,19 @@ bool sign_call_example(const cxxopts::ParseResult& parse_cmd_line)
         return libcrypt::elgamal_check_file_sign(params.dh_sys_params, params.user.shared_key, sign_file);
     }
 
+    if (parse_cmd_line.count("gost"))
+    {
+        libcrypt::gost_sys_params params = libcrypt::gost_gen_sys();
+
+        libcrypt::gost_file_signing(
+            params.mod, params.elliptic_exp, params.elliptic_coef, params.user.private_key, sign_file);
+
+        sign_file.seekg(std::ios::beg);
+
+        return libcrypt::gost_check_file_sign(
+            params.mod, params.elliptic_exp, params.elliptic_coef, params.user.shared_key, sign_file);
+    }
+
     return false;
 }
 
