@@ -93,7 +93,7 @@ libcrypt::rsa_sys_params rsa_gen_sys()
         do
         {
             mod_part_Q = prime_gen_range(mt);
-        } while (!libcrypt::is_prime(mod_part_Q));
+        } while (!libcrypt::is_prime(mod_part_Q) || (mod_part_Q == mod_part_P));
 
         euler_func_res = (mod_part_P - 1) * (mod_part_Q - 1);
         gcd_result = libcrypt::extended_gcd(recv_shared_key, euler_func_res);
