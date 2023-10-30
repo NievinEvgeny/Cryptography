@@ -1,6 +1,5 @@
 #include <libcrypt/utils.hpp>
 #include <libcrypt/ciphers.hpp>
-#include <libcrypt/signatures.hpp>
 #include <params/gen_params.hpp>
 #include <PicoSHA2/picosha2.h>
 #include <gtest/gtest.h>

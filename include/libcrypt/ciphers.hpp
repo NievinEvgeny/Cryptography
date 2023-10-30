@@ -2,7 +2,6 @@
 #include <libcrypt/utils.hpp>
 #include <fstream>
 #include <cstdint>
-#include <string>
 
 namespace libcrypt {
 
