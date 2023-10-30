@@ -123,7 +123,8 @@ libcrypt::gost_sys_params gost_gen_sys()
         elliptic_exp = elliptic_exp_gen_range(mt);
     } while (!libcrypt::is_prime(elliptic_exp));
 
-    std::uniform_int_distribution<int64_t> tmp_elliptic_coef_gen_range(INT16_MAX, INT32_MAX / elliptic_exp - 1);
+    std::uniform_int_distribution<int64_t> tmp_elliptic_coef_gen_range(
+        INT32_MAX / (2 * elliptic_exp) + 1, INT32_MAX / elliptic_exp - 1);
 
     int64_t tmp_elliptic_coef = 0;
     int64_t mod = 0;
