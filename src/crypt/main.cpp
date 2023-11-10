@@ -1,9 +1,11 @@
 #include <ciphers/ciphers_example.hpp>
 #include <signatures/signing_example.hpp>
+#include <poker/poker_example.hpp>
 #include <cxxopts.hpp>
 #include <iostream>
 #include <exception>
 #include <string>
+#include <cstdint>
 
 int main(int argc, char** argv)
 {
@@ -13,11 +15,13 @@ int main(int argc, char** argv)
     options.add_options()
         ("c,cipher", "cipher call")
         ("s,sign", "sign call")
+        ("p,poker", "poker call")
         ("shamir", "shamir cipher call")
         ("elgamal", "elgamal cipher/sign call")
         ("vernam", "vernam cipher call")
         ("rsa", "rsa cipher/sign call")
         ("gost", "gost sign call")
+        ("players", "number of players", cxxopts::value<uint8_t>()->default_value("10"))
         ("m,message", "message filename", cxxopts::value<std::string>()->default_value("examples/ciphers/message.txt"))
         ("e,encrypt", "encryption filename", cxxopts::value<std::string>()->default_value("examples/ciphers/encryption.txt"))
         ("d,decrypt", "decryption filename", cxxopts::value<std::string>()->default_value("examples/ciphers/decryption.txt"))
@@ -47,6 +51,11 @@ int main(int argc, char** argv)
             {
                 std::cout << "sign is correct\n";
             }
+        }
+
+        if (parse_cmd_line.count("poker"))
+        {
+            libcrypt::poker_call_example(parse_cmd_line);
         }
     }
     catch (const cxxopts::exceptions::exception& msg)

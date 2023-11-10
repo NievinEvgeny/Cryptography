@@ -7,6 +7,8 @@ add_library(${target_name} STATIC
     ${PROJECT_SOURCE_DIR}/include/libcrypt/ciphers.hpp
     signatures.cpp
     ${PROJECT_SOURCE_DIR}/include/libcrypt/signatures.hpp
+    poker.cpp
+    ${PROJECT_SOURCE_DIR}/include/libcrypt/poker.hpp
 )
 
 include(CompileOptions)
