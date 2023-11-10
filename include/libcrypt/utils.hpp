@@ -10,11 +10,15 @@ struct dh_system_params
     int64_t mod;
 };
 
+int64_t mod(int64_t value, int64_t mod);
+
 bool is_prime(int64_t prime);
 
 int64_t pow_mod(int64_t base, int64_t exp, int64_t mod);
 
 std::vector<int64_t> extended_gcd(int64_t first, int64_t second);
+
+int64_t gen_germain_prime();
 
 libcrypt::dh_system_params gen_dh_system();
 

@@ -7,6 +7,8 @@ add_library(${target_name} STATIC
     ciphers/ciphers_example.hpp
     params/gen_params.cpp
     params/gen_params.hpp
+    poker/poker_example.cpp
+    poker/poker_example.hpp
 )
 
 include(CompileOptions)

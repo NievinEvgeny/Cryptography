@@ -14,13 +14,6 @@ namespace libcrypt {
 
 constexpr int64_t file_hash_size = 64 * sizeof(int32_t);
 
-static inline int64_t mod(int64_t value, int64_t mod)
-{
-    int64_t m = value % mod;
-    mod &= m >> std::numeric_limits<int64_t>::digits;
-    return m + mod;
-}
-
 static std::string calc_file_hash(std::fstream& file)
 {
     std::vector<unsigned char> bin_file_hash(picosha2::k_digest_size);

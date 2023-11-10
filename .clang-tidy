@@ -29,7 +29,7 @@ Checks: |
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -bugprone-exception-escape
 WarningsAsErrors: true
-HeaderFilterRegex: '(libcrypt|ciphers|params|signatures)/'
+HeaderFilterRegex: '(libcrypt|ciphers|params|signatures|poker)/'
 AnalyzeTemporaryDtors: false
 FormatStyle:     file
 CheckOptions:
