@@ -10,6 +10,8 @@ struct dh_system_params
     int64_t mod;
 };
 
+int64_t mod(int64_t value, int64_t mod);
+
 bool is_prime(int64_t prime);
 
 int64_t pow_mod(int64_t base, int64_t exp, int64_t mod);

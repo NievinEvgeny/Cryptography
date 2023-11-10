@@ -7,6 +7,13 @@
 
 namespace libcrypt {
 
+int64_t mod(int64_t value, int64_t mod)
+{
+    int64_t m = value % mod;
+    mod &= m >> std::numeric_limits<int64_t>::digits;
+    return m + mod;
+}
+
 int64_t pow_mod(int64_t base, int64_t exp, int64_t mod)
 {
     {
