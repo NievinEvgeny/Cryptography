@@ -66,27 +66,36 @@ bool is_prime(int64_t prime)
     return true;
 }
 
-libcrypt::dh_system_params gen_dh_system()
+int64_t gen_germain_prime()
 {
-    int64_t prime = 0;
-    int64_t base = 0;
+    int64_t germain_prime = 0;
     std::random_device rd;
     std::mt19937 mt(rd());
     std::uniform_int_distribution<int64_t> prime_range(INT16_MAX, INT32_MAX / 2 - 1);
 
     do
     {
-        prime = prime_range(mt);
-    } while (!is_prime(prime) || !is_prime(2 * prime + 1));
+        germain_prime = prime_range(mt);
+    } while (!is_prime(germain_prime) || !is_prime(2 * germain_prime + 1));
 
-    int64_t mod = 2 * prime + 1;
+    return germain_prime;
+}
 
-    std::uniform_int_distribution<int64_t> base_range(2, prime - 2);
+libcrypt::dh_system_params gen_dh_system()
+{
+    int64_t base = 0;
+    std::random_device rd;
+    std::mt19937 mt(rd());
+
+    int64_t germain_prime = gen_germain_prime();
+    int64_t mod = 2 * germain_prime + 1;
+
+    std::uniform_int_distribution<int64_t> base_range(2, germain_prime - 2);
 
     do
     {
         base = base_range(mt);
-    } while (pow_mod(base, prime, mod) == 1);
+    } while (pow_mod(base, germain_prime, mod) == 1);
 
     return libcrypt::dh_system_params{base, mod};
 }
