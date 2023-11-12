@@ -1,5 +1,5 @@
 #include <ciphers/ciphers_example.hpp>
-#include <signatures/signing_example.hpp>
+#include <signatures/sign_example.hpp>
 #include <poker/poker_example.hpp>
 #include <cxxopts.hpp>
 #include <iostream>

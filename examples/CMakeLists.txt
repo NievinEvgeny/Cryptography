@@ -1,8 +1,8 @@
 set(target_name examples)
 
 add_library(${target_name} STATIC
-    signatures/signing_example.cpp
-    signatures/signing_example.hpp
+    signatures/sign_example.cpp
+    signatures/sign_example.hpp
     ciphers/ciphers_example.cpp
     ciphers/ciphers_example.hpp
     params/gen_params.cpp
