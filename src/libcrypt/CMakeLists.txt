@@ -9,6 +9,8 @@ add_library(${target_name} STATIC
     ${PROJECT_SOURCE_DIR}/include/libcrypt/signatures.hpp
     poker.cpp
     ${PROJECT_SOURCE_DIR}/include/libcrypt/poker.hpp
+    blind_sign.cpp
+    ${PROJECT_SOURCE_DIR}/include/libcrypt/blind_sign.hpp
 )
 
 include(CompileOptions)

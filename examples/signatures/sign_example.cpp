@@ -1,4 +1,4 @@
-#include <signatures/signing_example.hpp>
+#include <signatures/sign_example.hpp>
 #include <libcrypt/signatures.hpp>
 #include <params/gen_params.hpp>
 #include <cxxopts.hpp>
