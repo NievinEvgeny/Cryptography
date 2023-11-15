@@ -9,6 +9,8 @@ add_library(${target_name} STATIC
     params/gen_params.hpp
     poker/poker_example.cpp
     poker/poker_example.hpp
+    blind_sign/blind_sign_example.cpp
+    blind_sign/blind_sign_example.hpp
 )
 
 include(CompileOptions)
