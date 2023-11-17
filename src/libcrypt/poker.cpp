@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <random>
+#include <deque>
 
 namespace libcrypt {
 
