@@ -2,6 +2,8 @@ set(target_name tests)
 
 add_executable(
     ${target_name}
+    utils.cpp
+    ciphers.cpp
     signatures.cpp
 )
 
