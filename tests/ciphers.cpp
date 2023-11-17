@@ -79,6 +79,14 @@ class CiphersTest : public testing::Test
         files.emplace_back(std::ifstream{temp_dir + "/small.txt", std::ios::binary});
         files.emplace_back(std::ifstream{temp_dir + "/medium.txt", std::ios::binary});
         files.emplace_back(std::ifstream{temp_dir + "/big.txt", std::ios::binary});
+
+        for (const auto& file : files)
+        {
+            if (!file.is_open())
+            {
+                throw std::runtime_error{"Can't open file in cipher's SetUp"};
+            }
+        }
     }
 
     virtual void TearDown()
@@ -108,7 +116,7 @@ TEST_F(CiphersTest, shamir_with_different_files_size)
         libcrypt::shamir_encrypt(params.mod, params.recv.private_key, params.send.private_key, file, encryption_file);
 
         encryption_file.clear();
-        encryption_file.seekp(0, std::ios::beg);
+        encryption_file.seekp(std::ios::beg);
 
         libcrypt::shamir_decrypt(
             params.mod, params.recv.shared_key, params.send.shared_key, encryption_file, decryption_file_out);
@@ -158,7 +166,7 @@ TEST_F(CiphersTest, elgamal_with_different_files_size)
             params.dh_sys_params, params.session_key, params.user.shared_key, file, encryption_file);
 
         encryption_file.clear();
-        encryption_file.seekp(0, std::ios::beg);
+        encryption_file.seekp(std::ios::beg);
 
         libcrypt::elgamal_decrypt(
             params.dh_sys_params.mod, params.user.private_key, encryption_file, decryption_file_out);
@@ -216,13 +224,13 @@ TEST_F(CiphersTest, vernam_with_different_files_size)
             vernam_key_file.write(reinterpret_cast<const char*>(&rand), sizeof(char));
         }
 
-        vernam_key_file.seekp(0, std::ios::beg);
+        vernam_key_file.seekp(std::ios::beg);
 
         libcrypt::vernam_encrypt(vernam_key_file, file, encryption_file);
 
-        encryption_file.seekp(0, std::ios::beg);
+        encryption_file.seekp(std::ios::beg);
         vernam_key_file.clear();
-        vernam_key_file.seekp(0, std::ios::beg);
+        vernam_key_file.seekp(std::ios::beg);
 
         libcrypt::vernam_decrypt(vernam_key_file, encryption_file, decryption_file_out);
 
@@ -272,7 +280,7 @@ TEST_F(CiphersTest, rsa_with_different_files_size)
         libcrypt::rsa_encrypt(params.mod, params.user.shared_key, file, encryption_file);
 
         encryption_file.clear();
-        encryption_file.seekp(0, std::ios::beg);
+        encryption_file.seekp(std::ios::beg);
 
         libcrypt::rsa_decrypt(params.mod, params.user.private_key, encryption_file, decryption_file_out);
 

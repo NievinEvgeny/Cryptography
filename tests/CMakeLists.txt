@@ -4,6 +4,7 @@ add_executable(
     ${target_name}
     utils.cpp
     ciphers.cpp
+    signatures.cpp
 )
 
 target_link_libraries(
