@@ -14,7 +14,7 @@ namespace libcrypt {
 
 constexpr int64_t file_hash_size = 64 * sizeof(int32_t);
 
-static std::string calc_file_hash(std::fstream& file)
+std::string calc_file_hash(std::fstream& file)
 {
     std::vector<unsigned char> bin_file_hash(picosha2::k_digest_size);
     picosha2::hash256(
